@@ -18,7 +18,7 @@
   display: grid;
   grid-template-rows: repeat(var(--c4-rows, 6), auto);
   gap: var(--c4-gap);
-  padding: 4px 2px;
+  padding: 4px 3px;
   border: 0;
   border-radius: var(--r-md);
   background: transparent;
@@ -73,13 +73,15 @@
 /* Last disc dropped: a quiet ring so you can see what just happened. */
 .c4-slot.is-last { box-shadow: 0 0 0 2px var(--ochre); }
 
-/* Winning line: ochre ring + centre dot marker; other discs fade. */
-.c4-board.is-over .c4-slot:not(.is-winning) .c4-disc { opacity: 0.35; }
+/* Winning line: ochre ring + corner marker; other discs fade. */
+.c4-board.has-win .c4-slot:not(.is-winning) .c4-disc { opacity: 0.35; }
 .c4-slot.is-winning { box-shadow: 0 0 0 3px var(--ochre); animation: idl-pop 320ms var(--ease); }
 .c4-win-marker {
-  grid-area: 1 / 1;
-  width: 22%;
-  height: 22%;
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 30%;
+  height: 30%;
   border-radius: 50%;
   background: var(--ochre);
   box-shadow: 0 0 0 2px var(--card);

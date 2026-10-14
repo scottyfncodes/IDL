@@ -46,7 +46,7 @@
 @media (hover: hover) {
   .db-turn--p1 .db-edge:not(.is-drawn):hover .db-line { stroke: var(--clay); }
   .db-turn--p2 .db-edge:not(.is-drawn):hover .db-line { stroke: var(--tide); }
-  .db-edge:not(.is-drawn):hover .db-line { stroke-width: 5; stroke-dasharray: none; opacity: 0.45; }
+  .db-edge:not(.is-drawn):hover .db-line { stroke-width: 5; stroke-dasharray: none; opacity: 0.6; }
 }
 .db-turn--p1 .db-edge:not(.is-drawn):focus-visible .db-line { stroke: var(--clay); }
 .db-turn--p2 .db-edge:not(.is-drawn):focus-visible .db-line { stroke: var(--tide); }

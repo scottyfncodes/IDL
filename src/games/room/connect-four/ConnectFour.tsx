@@ -145,7 +145,7 @@ export default function ConnectFour() {
       </p>
 
       <div
-        className={`c4-board c4-turn--p${current}${over ? ' is-over' : ''}`}
+        className={`c4-board c4-turn--p${current}${over ? ' is-over' : ''}${result.winner ? ' has-win' : ''}`}
         role="group"
         aria-label="Connect Four board, 7 columns"
         style={{ '--c4-rows': ROWS } as CSSProperties}
