@@ -15,7 +15,7 @@
   aspect-ratio: 1;
   margin: 0 auto;
   padding: var(--bs-gap);
-  background: color-mix(in srgb, var(--tide) 22%, var(--line));
+  background: color-mix(in srgb, var(--tide) 32%, var(--line));
   border-radius: var(--r-md);
   user-select: none;
   -webkit-user-select: none;
@@ -29,7 +29,7 @@
   padding: 0;
   border: 0;
   border-radius: 5px;
-  background: color-mix(in srgb, var(--tide-soft) 45%, var(--card));
+  background: color-mix(in srgb, var(--tide-soft) 70%, var(--card));
   touch-action: manipulation;
   transition: background-color var(--dur);
 }

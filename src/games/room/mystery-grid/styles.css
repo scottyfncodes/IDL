@@ -1,0 +1,246 @@
+.game-body.mg-body { gap: var(--s-4); }
+.mg-body > * { width: 100%; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+/* ---------- Setup ---------- */
+.mg-setup {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-4);
+  text-align: center;
+  margin-top: var(--s-6);
+  padding: var(--s-7) var(--s-5);
+}
+.mg-setup__title { font-size: var(--fs-2xl); font-weight: 600; }
+
+/* ---------- Case header ---------- */
+.mg-case { display: grid; gap: var(--s-1); }
+.mg-case__title { font-size: var(--fs-xl); font-weight: 600; line-height: 1.15; }
+.mg-case__intro { font-size: var(--fs-sm); }
+
+/* ---------- Tabs ---------- */
+.mg-play { display: grid; gap: var(--s-3); }
+.mg-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  padding: 3px;
+  border-radius: var(--r-md);
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+}
+.mg-tab {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-height: 52px;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: calc(var(--r-md) - 3px);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1.2;
+  touch-action: manipulation;
+  transition: background-color var(--dur), color var(--dur);
+}
+.mg-tab[aria-selected='true'] { background: var(--card); color: var(--ink); box-shadow: var(--shadow-1); }
+.mg-tab__names { text-align: center; overflow-wrap: anywhere; }
+.mg-tab__count { display: flex; gap: 3px; }
+.mg-tab__count i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1.2px solid var(--line-strong);
+}
+.mg-tab__count i.is-on { background: var(--plum); border-color: var(--plum); }
+
+/* ---------- Grid ---------- */
+.mg-grid {
+  display: grid;
+  grid-template-columns: minmax(64px, 96px) repeat(4, minmax(0, 1fr));
+  gap: 0;
+  width: 100%;
+  border-radius: var(--r-md);
+}
+.mg-row { display: contents; }
+.mg-corner {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 0 6px 6px 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.mg-colhead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 84px;
+  padding-bottom: 6px;
+}
+.mg-colhead span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.1;
+  max-height: 110px;
+  white-space: nowrap;
+}
+.mg-rowhead {
+  display: flex;
+  align-items: center;
+  padding-right: 8px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  border-top: 1px solid var(--line);
+}
+.mg-cell {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  max-height: 72px;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--line-strong);
+  border-left: 1px solid var(--line-strong);
+  background: var(--card);
+  touch-action: manipulation;
+  transition: background-color 120ms;
+}
+/* outer frame: last column + bottom row */
+.mg-row > .mg-cell:last-child { border-right: 1px solid var(--line-strong); }
+.mg-row:last-child > .mg-cell { border-bottom: 1px solid var(--line-strong); }
+.mg-row:first-of-type > .mg-cell:nth-child(2) { border-top-left-radius: var(--r-sm); }
+.mg-cell:hover:not(:disabled) { background: var(--paper-2); }
+.mg-cell:disabled { cursor: default; }
+.mg-cell[data-mark='2'] { background: var(--plum-soft); }
+.mg-cell.is-flagged { box-shadow: inset 0 0 0 3px var(--tide); position: relative; z-index: 1; }
+.mg-cell.is-flagged.is-warn { box-shadow: inset 0 0 0 3px var(--error); }
+.mg-glyph { width: 44%; height: 44%; animation: idl-pop 200ms var(--ease); }
+.mg-glyph--x { fill: none; stroke: var(--ink-3); stroke-width: 2.4; stroke-linecap: round; }
+.mg-glyph--dot { fill: var(--plum); }
+.mg-grid.is-won .mg-glyph--dot { fill: var(--moss); }
+.mg-grid.is-won .mg-cell[data-mark='2'] { background: var(--moss-soft); }
+
+.mg-status { min-height: 44px; font-size: var(--fs-sm); line-height: 1.35; }
+.mg-status--warn { color: var(--error); }
+
+/* ---------- Actions ---------- */
+.mg-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); }
+.mg-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--tap);
+  border-radius: var(--r-pill);
+  border: 1.5px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  touch-action: manipulation;
+}
+.mg-tool:disabled { opacity: 0.4; cursor: default; }
+.mg-tool--primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.mg-tool__count {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--ochre-soft);
+  font-size: 11px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.mg-hint-line { text-align: center; font-size: var(--fs-xs); }
+
+.mg-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--tap);
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.mg-switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.mg-switch__track {
+  flex: none;
+  position: relative;
+  width: 40px;
+  height: 24px;
+  border-radius: var(--r-pill);
+  background: var(--line-strong);
+  transition: background-color var(--dur);
+}
+.mg-switch__track span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--shadow-1);
+  transition: transform var(--dur) var(--ease);
+}
+.mg-switch input:checked + .mg-switch__track { background: var(--moss); }
+.mg-switch input:checked + .mg-switch__track span { transform: translateX(16px); }
+.mg-switch input:focus-visible + .mg-switch__track { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- Clues ---------- */
+.mg-clues { display: grid; gap: var(--s-2); }
+.mg-clues__title { font-size: var(--fs-md); font-weight: 650; display: flex; align-items: baseline; gap: var(--s-2); }
+.mg-clues__title .meta { font-weight: 500; font-size: var(--fs-xs); }
+.mg-clue-list { display: grid; gap: var(--s-1); }
+.mg-clue {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--card);
+  color: var(--ink);
+  text-align: left;
+  font-size: var(--fs-md);
+  line-height: 1.4;
+  touch-action: manipulation;
+  transition: opacity var(--dur), background-color var(--dur);
+}
+.mg-clue__n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--plum-soft);
+  color: var(--plum);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mg-clue.is-struck { background: transparent; color: var(--ink-3); }
+.mg-clue.is-struck .mg-clue__text { text-decoration: line-through; text-decoration-color: var(--ink-3); }
+.mg-clue.is-struck .mg-clue__n { background: var(--paper-2); color: var(--ink-3); }
+
+/* ---------- Solution table ---------- */
+.mg-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); text-align: left; }
+.mg-table th, .mg-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.mg-table thead th { font-size: var(--fs-xs); color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+.mg-table tbody th { font-weight: 650; }
+.mg-table tbody tr:last-child th, .mg-table tbody tr:last-child td { border-bottom: 0; }

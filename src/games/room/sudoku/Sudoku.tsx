@@ -320,9 +320,9 @@ export default function Sudoku() {
                     const v = game.values[i];
                     const given = !!game.givens[i];
                     const wrong = !!v && !given && v !== game.solution[i];
-                    const sel = selected === i;
-                    const peer = selected !== null && !sel && (rowOf(i) === rowOf(selected) || colOf(i) === colOf(selected) || boxOf(i) === boxOf(selected));
-                    const same = !!selDigit && v === selDigit && !sel;
+                    const sel = !game.won && selected === i;
+                    const peer = !game.won && selected !== null && !sel && (rowOf(i) === rowOf(selected) || colOf(i) === colOf(selected) || boxOf(i) === boxOf(selected));
+                    const same = !game.won && !!selDigit && v === selDigit && !sel;
                     const notes = !v ? noteDigits(game.notes[i]) : [];
                     const cls = ['sdk-cell', given && 'is-given', v && !given && 'is-player', wrong && 'is-wrong', sel && 'is-selected', peer && 'is-peer', same && 'is-same', shake === i && 'anim-shake']
                       .filter(Boolean)

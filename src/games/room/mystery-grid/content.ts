@@ -58,7 +58,7 @@ export const THEMES: Theme[] = [
   {
     id: 'supper',
     title: 'Supper Club',
-    intro: 'Four friends sit along one side of a long table, each having brought a dish.',
+    intro: 'Four friends sit along one side of a long table — seats 1 to 4, left to right — each having brought a dish.',
     categories: [
       people('Guest', ['Wren', 'Tobias', 'Amara', 'Lio']),
       { name: 'Dish', items: ['onion tart', 'lentil soup', 'plum cake', 'flatbread'], subject: 'whoever brought the {}', verb: 'brought', negVerb: 'didn’t bring', obj: 'the {}' },
@@ -142,7 +142,7 @@ export const THEMES: Theme[] = [
   {
     id: 'bakery',
     title: 'Saturday Market',
-    intro: 'Four bakers set up stalls in a row, each famous for one loaf.',
+    intro: 'Four bakers set up in stalls 1 to 4 along the square, each famous for one loaf.',
     categories: [
       people('Baker', ['Agnes', 'Ravi', 'Lotte', 'Cyrus']),
       { name: 'Loaf', items: ['sourdough', 'rye', 'focaccia', 'brioche'], subject: 'whoever bakes the {}', verb: 'bakes', negVerb: 'doesn’t bake', obj: 'the {}' },
@@ -153,7 +153,7 @@ export const THEMES: Theme[] = [
         verb: 'runs',
         negVerb: 'doesn’t run',
         obj: '{}',
-        ordinal: { before: 'is further up the row than', justBefore: 'runs the stall just before' },
+        ordinal: { before: 'has a lower-numbered stall than', justBefore: 'runs the stall just before' },
       },
     ],
   },
