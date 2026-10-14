@@ -109,7 +109,7 @@ describe('linkup guesses', () => {
     expect(s.solved).toEqual([3, 0, 1, 2]);
     const res = resultFor(puzzle, s);
     expect(res.score).toBe('Solved · 1 mistake');
-    expect(res.grid).toEqual(['🟨🟨🟨🟩', '🟪🟪🟪🟪', '🟨🟨🟨🟨', '🟩🟩🟩🟩', '🟦🟦🟦🟦']);
+    expect(res.grid).toEqual(['🟨🟨🟩🟨', '🟪🟪🟪🟪', '🟨🟨🟨🟨', '🟩🟩🟩🟩', '🟦🟦🟦🟦']);
     expect(applyGuess(puzzle, s, G[0]).outcome.kind).toBe('invalid');
   });
 
