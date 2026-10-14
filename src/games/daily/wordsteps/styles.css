@@ -98,3 +98,9 @@
   text-transform: uppercase;
 }
 .ws-reveal__path span.is-changed { background: var(--clay-soft); box-shadow: inset 0 -3px 0 var(--clay); }
+
+/* Short phones: tighten the ladder so the keyboard stays near the fold. */
+@media (max-height: 760px) {
+  .ws-ladder { gap: 4px; }
+  .ws-rung__tiles { grid-template-columns: repeat(4, min(10.5vw, 40px)); }
+}

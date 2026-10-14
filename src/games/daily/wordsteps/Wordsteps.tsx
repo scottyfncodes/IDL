@@ -5,7 +5,6 @@ import { Keyboard, usePhysicalKeyboard, type KeyPress } from '../../../ui/Keyboa
 import {
   applyStep,
   changedIndex,
-  currentWord,
   maxMoves,
   resultGrid,
   scoreText,
@@ -48,7 +47,6 @@ export default function Wordsteps({ puzzle, record, save }: DailyGameProps<Puzzl
   const over = st !== 'playing';
   const moves = state.ladder.length;
   const limit = maxMoves(puzzle);
-  const prev = currentWord(puzzle, state);
 
   const commit = useCallback(
     (next: State) => {

@@ -105,8 +105,8 @@ export default function Deduction({ puzzle, record, save }: DailyGameProps<Puzzl
                     <span>{valueLabel('coat', s.coat)}</span>
                     <span>{valueLabel('holding', s.holding)}</span>
                   </span>
-                  {isCulprit && <span className="dd-suspect__badge dd-suspect__badge--culprit" aria-hidden="true">Culprit</span>}
-                  {accusedWrong && !isCulprit && <span className="dd-suspect__badge" aria-hidden="true">Accused</span>}
+                  {isCulprit && <span className="dd-suspect__badge dd-suspect__badge--culprit" aria-hidden="true">Guilty</span>}
+                  {accusedWrong && !isCulprit && <span className="dd-suspect__badge" aria-hidden="true">Wrong</span>}
                 </button>
               </li>
             );
@@ -121,7 +121,7 @@ export default function Deduction({ puzzle, record, save }: DailyGameProps<Puzzl
           {puzzle.clues.map((c, k) => (
             <li key={k} className="dd-clue">
               <span className="dd-clue__n" aria-hidden="true">{k + 1}</span>
-              <span><span className="sr-only">Clue {k + 1}: </span>{clueText(c)}</span>
+              <span><span className="dd-sr">Clue {k + 1}: </span>{clueText(c)}</span>
             </li>
           ))}
         </ol>
