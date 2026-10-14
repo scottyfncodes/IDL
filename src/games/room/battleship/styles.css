@@ -113,7 +113,7 @@ button.bs-cell:disabled { cursor: default; }
   align-items: center;
   gap: var(--s-2);
   min-height: var(--tap);
-  padding: 0 var(--s-3);
+  padding: 0 10px;
   border-radius: var(--r-md);
   border: 1.5px solid var(--line-strong);
   background: var(--card);
@@ -123,8 +123,8 @@ button.bs-cell:disabled { cursor: default; }
   transition: border-color var(--dur), background-color var(--dur), opacity var(--dur);
 }
 .bs-dock__ship.is-selected { border-color: var(--ink); background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--ink); }
-.bs-dock__ship.is-placed { opacity: 0.55; border-style: dashed; }
-.bs-dock__ship.is-placed .bs-dock__name::after { content: ' · placed'; font-weight: 500; color: var(--ink-3); }
+.bs-dock__ship.is-placed { color: var(--ink-3); border-style: dashed; background: transparent; }
+.bs-dock__check { color: var(--moss); margin-left: -2px; }
 
 .bs-pips { display: inline-flex; gap: 2px; }
 .bs-pips span { width: 7px; height: 7px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 62%, var(--card)); }

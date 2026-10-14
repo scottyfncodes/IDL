@@ -220,7 +220,7 @@ export default function Sumwise({ puzzle, record, save }: DailyGameProps<Puzzle,
         </p>
       </div>
 
-      <div className="sw-tiles" role="group" aria-label="Numbers">
+      <div className="sw-tiles" role="group" aria-label="Numbers" style={{ gridTemplateColumns: `repeat(${r.tiles.length}, minmax(0, 1fr))` }}>
         {r.tiles.map((v, i) => (
           <button
             key={i}
@@ -290,7 +290,7 @@ export function SumwiseReveal({ puzzle, record }: { puzzle: Puzzle; record: Dail
             </p>
             <p className="meta">
               Numbers: {r.tiles.join(', ')}
-              {st.outcomes[i] === 'hit' ? ` · You: ${tokensToString(st.exprs[i], r.tiles)}` : ''}
+              {st.outcomes[i] === 'hit' && tokensToString(st.exprs[i], r.tiles) !== tokensToString(r.solution, r.tiles) ? ` · Yours: ${tokensToString(st.exprs[i], r.tiles)}` : ''}
             </p>
           </li>
         ))}

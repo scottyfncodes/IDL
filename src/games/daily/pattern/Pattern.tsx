@@ -265,9 +265,12 @@ export function PatternReveal({ puzzle, record }: { puzzle: Puzzle; record: Dail
           <div className="pt-reveal__answer">
             <span className="muted">Answer</span>
             {s.visual ? (
-              <span className="pt-reveal__pic" role="img" aria-label={describeTerm(s.answer, s.visual)}>
-                <Term value={s.answer} visual={s.visual} />
-              </span>
+              <>
+                <span className="pt-reveal__pic" role="img" aria-label={describeTerm(s.answer, s.visual)}>
+                  <Term value={s.answer} visual={s.visual} />
+                </span>
+                {s.visual === 'dots' && <strong aria-hidden="true">{s.answer}</strong>}
+              </>
             ) : (
               <strong>{s.answer}</strong>
             )}

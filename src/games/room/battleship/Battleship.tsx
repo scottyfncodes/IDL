@@ -4,7 +4,7 @@ import { createRng, freshSeed } from '../../../lib/rng';
 import { GameScreen } from '../../../ui/GameScreen';
 import { Button } from '../../../ui/Button';
 import { Confirm } from '../../../ui/Confirm';
-import { IconRotate, IconShuffle } from '../../../ui/icons';
+import { IconCheck, IconRotate, IconShuffle } from '../../../ui/icons';
 import {
   CELLS,
   FLEET,
@@ -395,6 +395,7 @@ export default function Battleship() {
               >
                 <Pips n={s.length} />
                 <span className="bs-dock__name">{s.name}</span>
+                {placed && <IconCheck size={16} className="bs-dock__check" />}
               </button>
             );
           })}
