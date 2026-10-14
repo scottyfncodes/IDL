@@ -1,0 +1,27 @@
+.ttt-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: min(100%, 360px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  padding: 8px;
+  background: var(--line);
+  border-radius: var(--r-lg);
+}
+.ttt-cell {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--card);
+  transition: background-color var(--dur);
+}
+.ttt-cell:hover:not(:disabled) { background: var(--paper-2); }
+.ttt-cell:disabled { cursor: default; }
+.ttt-cell.is-winning { background: var(--ochre-soft); }
+.ttt-board.is-over .ttt-cell:not(.is-winning) .ttt-mark { opacity: 0.35; }
+.ttt-cell .ttt-mark { width: 62%; height: 62%; animation: idl-pop 220ms var(--ease); }
+.ttt-mark { width: 18px; height: 18px; fill: none; stroke-width: 4.5; stroke-linecap: round; }
+.ttt-mark--x { stroke: var(--clay); }
+.ttt-mark--o { stroke: var(--tide); }

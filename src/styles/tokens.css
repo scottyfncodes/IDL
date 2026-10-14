@@ -1,0 +1,105 @@
+/* idl design tokens. Every colour, space, radius and type size in the app
+ * should come from here. */
+:root {
+  /* Paper & ink */
+  --paper: #f5efe3;
+  --paper-2: #efe7d7;      /* recessed surfaces */
+  --card: #fbf8f1;         /* raised surfaces */
+  --ink: #1c2420;          /* forest-black */
+  --ink-2: #4a524c;        /* secondary text */
+  --ink-3: #7b8079;        /* tertiary / meta text */
+  --line: #ddd3c1;
+  --line-strong: #c4b8a2;
+
+  /* Accents — muted, earthy, never neon */
+  --clay: #b9512f;         /* primary accent / player one */
+  --clay-soft: #f1d9cb;
+  --moss: #4d6b4f;         /* success */
+  --moss-soft: #d9e4d3;
+  --ochre: #c9932f;        /* present / caution */
+  --ochre-soft: #f3e2bc;
+  --tide: #34587a;         /* player two / info */
+  --tide-soft: #d4dfea;
+  --plum: #74465f;
+  --plum-soft: #ead8e0;
+  --error: #a63a2b;
+
+  --focus: #34587a;
+  --shadow-1: 0 1px 0 rgba(28, 36, 32, 0.06), 0 1px 2px rgba(28, 36, 32, 0.06);
+  --shadow-2: 0 1px 0 rgba(28, 36, 32, 0.05), 0 8px 24px -10px rgba(28, 36, 32, 0.22);
+  --scrim: rgba(28, 36, 32, 0.42);
+
+  /* Type */
+  --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino', Georgia, serif;
+  --font-ui: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --fs-xs: 0.75rem;   /* 12 */
+  --fs-sm: 0.8125rem; /* 13 */
+  --fs-md: 0.9375rem; /* 15 */
+  --fs-lg: 1.0625rem; /* 17 */
+  --fs-xl: 1.375rem;  /* 22 */
+  --fs-2xl: 1.75rem;  /* 28 */
+  --fs-3xl: 2.375rem; /* 38 */
+
+  /* Space — 4px base */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 40px;
+  --s-9: 56px;
+  --gutter: 20px;
+
+  /* Shape */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-xl: 26px;
+  --r-pill: 999px;
+
+  --tap: 44px;             /* minimum touch target */
+  --content-max: 640px;
+  --nav-h: 64px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 160ms;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --paper: #141a17;
+  --paper-2: #1b2320;
+  --card: #1e2723;
+  --ink: #efe8da;
+  --ink-2: #c3bdb0;
+  --ink-3: #8f938a;
+  --line: #2f3a35;
+  --line-strong: #46534c;
+  --clay: #e07a55;
+  --clay-soft: #4a2c22;
+  --moss: #87ad86;
+  --moss-soft: #263a2a;
+  --ochre: #e0b257;
+  --ochre-soft: #4a3b1c;
+  --tide: #85abd1;
+  --tide-soft: #1f3247;
+  --plum: #c991ad;
+  --plum-soft: #3f2a36;
+  --error: #ec8a76;
+  --focus: #85abd1;
+  --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  --scrim: rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur: 0ms; }
+}

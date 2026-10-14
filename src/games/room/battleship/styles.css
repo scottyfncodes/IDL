@@ -1,0 +1,151 @@
+.bs-body { gap: var(--s-4); }
+
+.bs-pmark { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.player-chip--p1 .bs-pmark path { fill: color-mix(in srgb, currentColor 25%, transparent); }
+.player-chip--p2 .bs-pmark path { fill: color-mix(in srgb, currentColor 25%, transparent); }
+
+/* ---------- Board ---------- */
+.bs-board {
+  --bs-gap: 3px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: var(--bs-gap);
+  width: min(100%, 400px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  padding: var(--bs-gap);
+  background: color-mix(in srgb, var(--tide) 32%, var(--line));
+  border-radius: var(--r-md);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.bs-board--sm { --bs-gap: 2px; width: 100%; max-width: 168px; border-radius: var(--r-sm); }
+
+.bs-cell {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--tide-soft) 70%, var(--card));
+  touch-action: manipulation;
+  transition: background-color var(--dur);
+}
+.bs-board--sm .bs-cell { border-radius: 2px; }
+button.bs-cell:hover:not(:disabled) { background: var(--tide-soft); }
+button.bs-cell:disabled { cursor: default; }
+.bs-cell.is-preview { background: var(--moss-soft); box-shadow: inset 0 0 0 2px var(--moss); }
+.bs-cell.is-invalid { background: var(--clay-soft); box-shadow: inset 0 0 0 2px var(--error); }
+.bs-cell.is-invalid::after { content: ''; width: 40%; height: 2px; background: var(--error); transform: rotate(-45deg); border-radius: 2px; }
+
+.bs-hull {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+  margin: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 62%, var(--card));
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--ink) 30%, transparent);
+  animation: idl-pop 220ms var(--ease);
+}
+.bs-board--sm .bs-hull { margin: 1px; animation: none; }
+
+.bs-sunk {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  margin: 1px;
+  border-radius: 999px;
+  border: 2.5px solid var(--clay);
+  background: color-mix(in srgb, var(--clay) 12%, transparent);
+  animation: idl-pop 260ms var(--ease);
+}
+
+.bs-overlay { position: relative; z-index: 3; pointer-events: none; display: grid; place-items: center; }
+.bs-cell__mark { display: grid; place-items: center; width: 100%; height: 100%; }
+.bs-cell__mark.is-fresh { animation: idl-pop 260ms var(--ease); }
+.bs-mark { width: 62%; height: 62%; fill: none; stroke-linecap: round; }
+.bs-mark--hit { stroke: var(--clay); stroke-width: 3.4; }
+.bs-hull ~ .bs-overlay .bs-mark--hit { stroke: var(--clay); paint-order: stroke; }
+.bs-mark--miss { fill: var(--ink-2); stroke: none; }
+.bs-board--sm .bs-mark--hit { stroke-width: 4; }
+.bs-board--sm .bs-mark--miss circle { r: 3.4; }
+
+@keyframes bs-shake-a { 0%, 100% { transform: none; } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+@keyframes bs-shake-b { 0%, 100% { transform: none; } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+.bs-shake-a { animation: bs-shake-a 360ms ease; }
+.bs-shake-b { animation: bs-shake-b 360ms ease; }
+
+/* ---------- Handoff ---------- */
+.bs-handoff {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-4);
+  text-align: center;
+  margin: auto 0;
+  padding: var(--s-7) var(--s-5);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-1);
+}
+.bs-handoff__badge {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+}
+.bs-handoff__badge--p1 { color: var(--clay); background: var(--clay-soft); }
+.bs-handoff__badge--p2 { color: var(--tide); background: var(--tide-soft); }
+.bs-handoff__badge .bs-pmark { width: 32px; height: 32px; }
+.bs-handoff__badge .bs-pmark path { fill: color-mix(in srgb, currentColor 25%, transparent); }
+.bs-handoff__title { font-size: var(--fs-2xl); line-height: 1.15; }
+.bs-handoff .btn { white-space: normal; text-align: center; }
+
+/* ---------- Setup ---------- */
+.bs-dock { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); }
+.bs-dock__ship {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--tap);
+  padding: 0 10px;
+  border-radius: var(--r-md);
+  border: 1.5px solid var(--line-strong);
+  background: var(--card);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  touch-action: manipulation;
+  transition: border-color var(--dur), background-color var(--dur), opacity var(--dur);
+}
+.bs-dock__ship.is-selected { border-color: var(--ink); background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--ink); }
+.bs-dock__ship.is-placed { color: var(--ink-3); border-style: dashed; background: transparent; }
+.bs-dock__check { color: var(--moss); margin-left: -2px; }
+
+.bs-pips { display: inline-flex; gap: 2px; }
+.bs-pips span { width: 7px; height: 7px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 62%, var(--card)); }
+
+/* ---------- Attack ---------- */
+.bs-target { display: grid; gap: var(--s-2); }
+.bs-caption { text-align: center; }
+.bs-status--hit { color: var(--clay); }
+.bs-intel { display: grid; grid-template-columns: minmax(0, 168px) minmax(0, 1fr); gap: var(--s-4); align-items: start; justify-content: center; }
+.bs-own { display: grid; gap: var(--s-2); justify-items: start; }
+.bs-fleetlist { display: grid; gap: var(--s-2); }
+.bs-fleetlist ul { display: grid; gap: 6px; }
+.bs-fleetlist li { display: flex; align-items: center; gap: var(--s-2); font-size: var(--fs-sm); font-weight: 600; }
+.bs-fleetlist li .bs-pips { min-width: 36px; }
+.bs-fleetlist li.is-sunk { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--clay); text-decoration-thickness: 2px; }
+.bs-fleetlist li.is-sunk .bs-pips span { background: transparent; box-shadow: inset 0 0 0 1.5px var(--clay); }
+
+/* ---------- Over ---------- */
+.bs-stats { border-collapse: collapse; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; width: 100%; max-width: 360px; }
+.bs-stats th, .bs-stats td { padding: 6px 4px; text-align: center; border-bottom: 1px solid var(--line); }
+.bs-stats th[scope='row'] { text-align: left; }
+.bs-stats thead th { color: var(--ink-3); font-weight: 600; font-size: var(--fs-xs); }
+.bs-reveal { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4); justify-items: center; }
+.bs-reveal .bs-own { justify-items: center; width: 100%; }
