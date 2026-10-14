@@ -16,6 +16,10 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/pwa/sw-template.js'],
+    languageOptions: { globals: { __IDL_PRECACHE__: 'readonly' } },
+  },
+  {
     files: ['**/*.{js,mjs}'],
     extends: [js.configs.recommended],
     languageOptions: { globals: { ...globals.browser, ...globals.node, ...globals.serviceworker } },

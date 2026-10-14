@@ -28,6 +28,9 @@ function idlServiceWorker(): Plugin {
       }
       const version = hash.digest('hex').slice(0, 12);
       const template = readFileSync(join(__dirname, 'src/pwa/sw-template.js'), 'utf8');
+      for (const marker of ['__IDL_VERSION__', '__IDL_PRECACHE__']) {
+        if (template.split(marker).length !== 2) throw new Error(`sw-template.js must contain ${marker} exactly once`);
+      }
       this.emitFile({
         type: 'asset',
         fileName: 'sw.js',

@@ -1,4 +1,3 @@
-/* global __IDL_PRECACHE__ */
 /* idl service worker.
  * Precaches the full app shell (every built asset) at install time so the app
  * and all games launch with no network. The precache list and version are

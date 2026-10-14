@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { IconBackspace } from './icons';
 
 export type KeyState = 'correct' | 'present' | 'absent' | undefined;
@@ -53,6 +53,12 @@ export function Keyboard({ onKey, states = {}, disabled, enterLabel = 'Enter' }:
 
 /** Forward physical keyboard presses (ignores typing in inputs and modifier chords). */
 export function usePhysicalKeyboard(onKey: (k: KeyPress) => void, enabled = true) {
+  // Always call the latest handler: fast typists can press the next key
+  // before a passive effect would have re-subscribed a fresh closure.
+  const latest = useRef(onKey);
+  useLayoutEffect(() => {
+    latest.current = onKey;
+  });
   useEffect(() => {
     if (!enabled) return;
     const handler = (e: KeyboardEvent) => {
@@ -64,15 +70,15 @@ export function usePhysicalKeyboard(onKey: (k: KeyPress) => void, enabled = true
         // Let Enter activate a focused button normally.
         if (t && t.tagName === 'BUTTON') return;
         e.preventDefault();
-        onKey({ type: 'enter' });
+        latest.current({ type: 'enter' });
       } else if (e.key === 'Backspace') {
         e.preventDefault();
-        onKey({ type: 'back' });
+        latest.current({ type: 'back' });
       } else if (/^[a-zA-Z]$/.test(e.key)) {
-        onKey({ type: 'letter', letter: e.key.toLowerCase() });
+        latest.current({ type: 'letter', letter: e.key.toLowerCase() });
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onKey, enabled]);
+  }, [enabled]);
 }

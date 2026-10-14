@@ -10,8 +10,13 @@ export function registerServiceWorker(onUpdate: UpdateHandler) {
   const run = async () => {
     try {
       const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+      // Only reload when the player accepted an update. The very first
+      // install also fires controllerchange (clients.claim), and reloading
+      // then would wipe whatever they had just started.
+      let updateAccepted = false;
       const offer = (worker: ServiceWorker) =>
         onUpdate(() => {
+          updateAccepted = true;
           worker.postMessage({ type: 'SKIP_WAITING' });
         });
       if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
@@ -23,7 +28,7 @@ export function registerServiceWorker(onUpdate: UpdateHandler) {
       });
       let reloading = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (reloading) return;
+        if (reloading || !updateAccepted) return;
         reloading = true;
         window.location.reload();
       });
