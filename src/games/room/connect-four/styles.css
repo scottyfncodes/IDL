@@ -1,0 +1,92 @@
+.c4-screen { gap: var(--s-4); }
+
+.c4-board {
+  --c4-gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  width: min(100%, 440px);
+  margin: 0 auto;
+  padding: 6px;
+  background: var(--paper-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.c4-col {
+  display: grid;
+  grid-template-rows: repeat(var(--c4-rows, 6), auto);
+  gap: var(--c4-gap);
+  padding: 4px 2px;
+  border: 0;
+  border-radius: var(--r-md);
+  background: transparent;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--dur);
+  min-width: 0;
+}
+.c4-col:disabled { cursor: default; }
+.c4-col[aria-disabled='true'] { cursor: not-allowed; }
+@media (hover: hover) {
+  .c4-col:hover:not(:disabled):not(.is-full) { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+}
+.c4-col:focus-visible { background: color-mix(in srgb, var(--focus) 12%, transparent); }
+
+.c4-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: inset 0 2px 3px color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.c4-disc { display: block; width: 100%; height: 100%; }
+.c4-disc__body { stroke: none; }
+.c4-disc--p1 .c4-disc__body { fill: var(--clay); }
+.c4-disc--p2 .c4-disc__body { fill: var(--tide); }
+.c4-disc__mark { fill: none; stroke: var(--card); stroke-width: 3.2; stroke-linecap: round; opacity: 0.9; }
+
+.c4-slot .c4-disc { grid-area: 1 / 1; }
+
+/* Drop: a short fall from above the column. */
+.c4-disc.is-dropping { animation: c4-drop calc(140ms + var(--c4-from, 1) * 30ms) cubic-bezier(0.5, 0, 0.9, 0.6); }
+@keyframes c4-drop {
+  from { transform: translateY(calc(var(--c4-from, 1) * -112%)); }
+  to { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .c4-disc.is-dropping { animation: none; }
+}
+
+/* Ghost preview in the landing slot: only on hover (pointer devices) or keyboard focus. */
+.c4-ghost { opacity: 0; transition: opacity var(--dur); }
+@media (hover: hover) {
+  .c4-col:hover .c4-ghost { opacity: 0.3; }
+}
+.c4-col:focus-visible .c4-ghost { opacity: 0.4; }
+
+/* Last disc dropped: a quiet ring so you can see what just happened. */
+.c4-slot.is-last { box-shadow: 0 0 0 2px var(--ochre); }
+
+/* Winning line: ochre ring + centre dot marker; other discs fade. */
+.c4-board.is-over .c4-slot:not(.is-winning) .c4-disc { opacity: 0.35; }
+.c4-slot.is-winning { box-shadow: 0 0 0 3px var(--ochre); animation: idl-pop 320ms var(--ease); }
+.c4-win-marker {
+  grid-area: 1 / 1;
+  width: 22%;
+  height: 22%;
+  border-radius: 50%;
+  background: var(--ochre);
+  box-shadow: 0 0 0 2px var(--card);
+  z-index: 1;
+}
+
+.c4-chip-disc { width: 20px; height: 20px; flex: none; }
+.c4-chip-disc .c4-disc__mark { stroke-width: 4; }
+
+.c4-draws { text-align: center; }

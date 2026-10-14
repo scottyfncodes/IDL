@@ -1,0 +1,88 @@
+.db-screen { gap: var(--s-4); }
+.db-top { display: flex; justify-content: center; }
+
+.db-board-wrap {
+  width: min(100%, 420px);
+  margin: 0 auto;
+  padding: var(--s-2);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+.db-board {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  overflow: visible;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Dots sit on top and never catch taps. */
+.db-dot { fill: var(--ink); pointer-events: none; }
+
+/* Edges */
+.db-edge { outline: none; cursor: pointer; touch-action: manipulation; }
+.db-edge[aria-disabled='true'] { cursor: default; }
+.db-hit { fill: transparent; }
+.db-line {
+  stroke: transparent;
+  stroke-width: 6;
+  stroke-linecap: round;
+  pointer-events: none;
+  transition: stroke var(--dur), opacity var(--dur);
+}
+/* faint guide for every open line */
+.db-edge:not(.is-drawn) .db-line { stroke: var(--line); stroke-width: 2; stroke-dasharray: 2 7; }
+
+.db-edge.is-drawn .db-line { stroke-dasharray: none; stroke-width: 6; animation: db-draw 220ms var(--ease); }
+.db-edge--p1.is-drawn .db-line { stroke: var(--clay); }
+.db-edge--p2.is-drawn .db-line { stroke: var(--tide); }
+
+/* Preview in the current player's colour: hover (pointer devices) and keyboard focus. */
+@media (hover: hover) {
+  .db-turn--p1 .db-edge:not(.is-drawn):hover .db-line { stroke: var(--clay); }
+  .db-turn--p2 .db-edge:not(.is-drawn):hover .db-line { stroke: var(--tide); }
+  .db-edge:not(.is-drawn):hover .db-line { stroke-width: 5; stroke-dasharray: none; opacity: 0.45; }
+}
+.db-turn--p1 .db-edge:not(.is-drawn):focus-visible .db-line { stroke: var(--clay); }
+.db-turn--p2 .db-edge:not(.is-drawn):focus-visible .db-line { stroke: var(--tide); }
+.db-edge:not(.is-drawn):focus-visible .db-line { stroke-width: 6; stroke-dasharray: none; opacity: 0.6; }
+.db-edge:focus-visible .db-hit { fill: color-mix(in srgb, var(--focus) 14%, transparent); }
+
+/* Last move: a soft ochre halo behind the line. */
+.db-last { stroke: var(--ochre); stroke-opacity: 0.45; stroke-width: 14; stroke-linecap: round; pointer-events: none; }
+
+/* Claimed boxes: soft fill + player mark, so colour isn't the only cue. */
+.db-box { pointer-events: none; }
+.db-box--p1 rect { fill: var(--clay-soft); }
+.db-box--p2 rect { fill: var(--tide-soft); }
+.db-box.is-fresh { transform-box: fill-box; transform-origin: center; animation: idl-pop 280ms var(--ease); }
+
+.db-mark { fill: none; stroke-width: 4; stroke-linecap: round; }
+svg.db-mark { width: 18px; height: 18px; flex: none; }
+.db-mark--p1 { stroke: var(--clay); }
+.db-mark--p2 { stroke: var(--tide); }
+
+.db-board-wrap.is-over .db-last { display: none; }
+
+/* "Another turn" micro-feedback */
+.db-flash {
+  display: inline-block;
+  padding: 2px var(--s-3);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  animation: idl-pop 260ms var(--ease);
+}
+.db-flash--p1 { background: var(--clay-soft); }
+.db-flash--p2 { background: var(--tide-soft); }
+
+.db-end-size { display: grid; gap: var(--s-2); justify-items: center; }
+
+@keyframes db-draw { from { opacity: 0.2; } to { opacity: 1; } }

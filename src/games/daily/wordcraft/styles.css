@@ -1,0 +1,111 @@
+/* Wordcraft — board sized so board + keyboard fit a 375×667 screen. */
+.wc {
+  --wc-gap: 6px;
+  /* 64px header + ~60px body padding + keyboard + message line */
+  --wc-kb-h: calc(3 * var(--wc-key-h) + 14px);
+  --wc-key-h: clamp(42px, 7.2dvh, 54px);
+  --wc-tile: min(
+    62px,
+    calc((100vw - 2 * var(--gutter) - 4 * var(--wc-gap)) / 5),
+    calc((100dvh - 64px - 64px - var(--wc-kb-h) - 40px - 5 * var(--wc-gap) - 16px) / 6)
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: calc(100dvh - 64px - 64px - var(--safe-top) - var(--safe-bottom));
+  margin-top: calc(-1 * var(--s-3));
+}
+
+.wc-msg {
+  height: 32px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.wc-msg__bubble {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  padding: 6px var(--s-4);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-2);
+  white-space: nowrap;
+}
+
+.wc-board {
+  display: grid;
+  gap: var(--wc-gap);
+  justify-content: center;
+}
+.wc-row {
+  display: grid;
+  grid-template-columns: repeat(5, var(--wc-tile));
+  gap: var(--wc-gap);
+}
+
+.wc-tile {
+  position: relative;
+  width: var(--wc-tile);
+  height: var(--wc-tile);
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  font-family: var(--font-display);
+  font-size: calc(var(--wc-tile) * 0.5);
+  font-weight: 600;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--ink);
+  transition: border-color var(--dur);
+}
+.wc-tile--filled { border-color: var(--ink-3); }
+
+.wc-tile--correct { background: var(--moss); border-color: var(--moss); color: #fff; }
+.wc-tile--present { background: var(--ochre); border-color: var(--ochre); color: #1c2420; }
+.wc-tile--absent { background: var(--paper-2); border-color: var(--paper-2); color: var(--ink-3); }
+
+/* Shape markers so colour is never the only cue. */
+.wc-tile--correct::after,
+.wc-tile--present::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--wc-tile) * 0.1);
+  transform: translateX(-50%);
+  background: currentColor;
+  opacity: 0.75;
+}
+.wc-tile--correct::after { width: 34%; height: 2px; border-radius: 2px; }
+.wc-tile--present::after { width: 4px; height: 4px; border-radius: 50%; }
+
+.wc-tile--reveal {
+  animation: wc-flip 420ms var(--ease) both;
+  animation-delay: calc(var(--i) * 110ms);
+}
+@keyframes wc-flip {
+  0% { transform: rotateX(0); background: var(--card); border-color: var(--ink-3); color: var(--ink); }
+  49% { transform: rotateX(90deg); background: var(--card); border-color: var(--ink-3); color: var(--ink); }
+  50% { transform: rotateX(90deg); }
+  100% { transform: rotateX(0); }
+}
+
+.wc-kb {
+  width: 100%;
+  margin-top: auto;
+  padding-top: var(--s-3);
+}
+.wc-kb .kb { gap: 6px; }
+.wc-kb .kb__key { height: var(--wc-key-h); touch-action: manipulation; }
+
+.wc-reveal { text-align: center; color: var(--ink-2); }
+.wc-reveal__word {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  color: var(--ink);
+  letter-spacing: 0.08em;
+  margin-left: var(--s-1);
+}
