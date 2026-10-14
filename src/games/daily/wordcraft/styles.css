@@ -109,3 +109,4 @@
   letter-spacing: 0.08em;
   margin-left: var(--s-1);
 }
+.wc--done { min-height: 0; }

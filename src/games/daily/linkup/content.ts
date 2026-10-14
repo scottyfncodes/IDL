@@ -61,7 +61,7 @@ export const POOL: LinkupPuzzle[] = [
   P('L037', ['Bakery treats', 'CROISSANT|MUFFIN|SCONE|DOUGHNUT'], ['On wheels', 'BICYCLE|WAGON|SCOOTER|TROLLEY'], ['Things you fold', 'NAPKIN|ORIGAMI|LAUNDRY|MAP'], ['Hidden drinks', 'STEAK|COLANDER|POPLAR|CHAIR']),
   P('L038', ['Jungle animals', 'MONKEY|GORILLA|PARROT|TOUCAN'], ['First aid kit', 'PLASTER|GAUZE|TWEEZERS|ANTISEPTIC'], ['Kinds of tea', 'GREEN|MINT|CHAI|EARL GREY'], ['___bread', 'GINGER|SHORT|CORN|FLAT']),
   P('L039', ['Nuts', 'ALMOND|CASHEW|WALNUT|PECAN'], ['Cleaning kit', 'MOP|SPONGE|DUSTER|BUCKET'], ['A fight', 'BRAWL|SCUFFLE|CLASH|SCRAP'], ['___stick', 'CHOP|LIP|JOY|BROOM']),
-  P('L040', ['Sea mammals', 'DOLPHIN|SEAL|WALRUS|OTTER'], ['Sticky', 'GLUE|TAPE|HONEY|GUM'], ['Things you tune', 'PIANO|RADIO|ENGINE|GUITAR'], ['Add B to the front', 'RAIN|LOOM|RUSH|LACK']),
+  P('L040', ['Marine mammals', 'DOLPHIN|SEAL|WALRUS|OTTER'], ['Sticky', 'GLUE|TAPE|HONEY|GUM'], ['Things you tune', 'PIANO|RADIO|ENGINE|GUITAR'], ['Add B to the front', 'RAIN|LOOM|RUSH|LACK']),
   P('L041', ['Tropical fruits', 'PINEAPPLE|PAPAYA|COCONUT|GUAVA'], ['Hello', 'HI|HEY|HOWDY|GREETINGS'], ['Parts of a plant', 'PETAL|STEM|LEAF|ROOT'], ['___hood', 'CHILD|BROTHER|FALSE|KNIGHT']),
   P('L042', ['Furniture', 'SOFA|CHAIR|DRESSER|STOOL'], ['Big storms', 'BLIZZARD|TORNADO|HURRICANE|MONSOON'], ['Striped', 'ZEBRA|BARCODE|CANDY CANE|BUMBLEBEE'], ['___top', 'DESK|LAP|ROOF|TABLE']),
   P('L043', ['Things you send', 'LETTER|POSTCARD|EMAIL|MEMO'], ['Can sting', 'BEE|NETTLE|WASP|JELLYFISH'], ['Things you sharpen', 'PENCIL|KNIFE|AXE|CLAWS'], ['Hidden colours', 'BORED|STAND|GREYHOUND|STEAL']),

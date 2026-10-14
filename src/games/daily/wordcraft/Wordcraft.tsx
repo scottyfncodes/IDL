@@ -88,7 +88,7 @@ export default function Wordcraft({ puzzle, record, save }: DailyGameProps<Wordc
   const activeRow = finished ? -1 : guesses.length;
 
   return (
-    <div className="wc">
+    <div className={`wc${finished && !revealing ? ' wc--done' : ''}`}>
       <div className="wc-msg" role="status" aria-live="polite">
         {message && (
           <span className="wc-msg__bubble anim-rise" key={message.id}>
@@ -138,9 +138,11 @@ export default function Wordcraft({ puzzle, record, save }: DailyGameProps<Wordc
         })}
       </div>
 
-      <div className="wc-kb">
-        <Keyboard onKey={onKey} states={states} disabled={finished} />
-      </div>
+      {(!finished || revealing) && (
+        <div className="wc-kb">
+          <Keyboard onKey={onKey} states={states} disabled={revealing} />
+        </div>
+      )}
     </div>
   );
 }

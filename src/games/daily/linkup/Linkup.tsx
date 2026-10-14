@@ -65,17 +65,23 @@ export default function Linkup({ date, puzzle, record, save }: DailyGameProps<Li
   const [state, setState] = useState<LinkupState>(() => record?.state ?? initialState(puzzle, date));
   const [selected, setSelected] = useState<string[]>([]);
   const [message, setMessage] = useState<Message | null>(null);
-  const [shakeKey, setShakeKey] = useState(0);
+  const [shaking, setShaking] = useState(false);
   const [freshBand, setFreshBand] = useState<number | null>(null);
   const timer = useRef<number | undefined>(undefined);
+  const shakeTimer = useRef<number | undefined>(undefined);
 
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(timer.current);
+      window.clearTimeout(shakeTimer.current);
+    },
+    [],
+  );
 
   const status = statusOf(state);
   const finished = status !== 'playing' || record?.status === 'won' || record?.status === 'lost';
   const tiles = remainingWords(puzzle, state);
   const bands = bandOrder(puzzle, state);
-  // After a loss the shell shows the result; show every group on the board too.
 
   const flash = useCallback((text: string, ms = 1800) => {
     window.clearTimeout(timer.current);
@@ -104,7 +110,9 @@ export default function Linkup({ date, puzzle, record, save }: DailyGameProps<Li
       setFreshBand(outcome.group);
       if (st === 'won') flash(next.mistakes === 0 ? 'Flawless!' : 'All four found', 2600);
     } else {
-      setShakeKey((k) => k + 1);
+      setShaking(true);
+      window.clearTimeout(shakeTimer.current);
+      shakeTimer.current = window.setTimeout(() => setShaking(false), 400);
       if (st === 'lost') {
         setSelected([]);
         flash('Out of mistakes — here they are', 2600);
@@ -137,9 +145,9 @@ export default function Linkup({ date, puzzle, record, save }: DailyGameProps<Li
               const on = selectedKeys.has(wordKey(w));
               return (
                 <button
-                  key={on ? `${w}-${shakeKey}` : w}
+                  key={w}
                   type="button"
-                  className={`lk-tile${sizeClass(w)}${on ? ' is-selected' : ''}${on && shakeKey > 0 ? ' lk-tile--shake' : ''}`}
+                  className={`lk-tile${sizeClass(w)}${on ? ' is-selected' : ''}${on && shaking ? ' lk-tile--shake' : ''}`}
                   aria-pressed={on}
                   onClick={() => toggle(w)}
                 >
@@ -203,12 +211,23 @@ export function LinkupRules() {
 
 export function LinkupReveal({ puzzle, record }: { puzzle: LinkupPuzzle; record: DailyRecord<LinkupState> }) {
   const solved = new Set(record.state?.solved ?? []);
-  const groups = [...puzzle.groups].sort((a, b) => a.level - b.level);
+  const order = puzzle.groups.map((_, i) => i).sort((a, b) => puzzle.groups[a].level - puzzle.groups[b].level);
   return (
-    <div className="lk-reveal">
-      {groups.map((g) => (
-        <GroupBand key={g.label} group={g} found={solved.has(puzzle.groups.indexOf(g))} />
-      ))}
-    </div>
+    <ul className="lk-reveal" aria-label="Today’s groups">
+      {order.map((i) => {
+        const g = puzzle.groups[i];
+        return (
+          <li key={i} className="lk-reveal__item">
+            <span className={`lk-reveal__swatch lk-band--${LEVEL_TONES[g.level]}`} aria-hidden="true" />
+            <LevelMarker level={g.level} />
+            <span className="lk-reveal__text">
+              <strong>{g.label}</strong>
+              <span className="meta"> — {g.words.join(', ')}</span>
+              {!solved.has(i) && <span className="meta"> (missed)</span>}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

@@ -1,4 +1,4 @@
-import { addDays, LAUNCH_DATE } from '../../../lib/date';
+import { addDays } from '../../../lib/date';
 import {
   MAX_MISTAKES,
   applyGuess,
