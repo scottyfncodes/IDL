@@ -1,0 +1,101 @@
+/* Mancala. Slightly narrower gutters on phones so six pits stay ≥ 44px wide. */
+.game-body.mnc-body {
+  gap: var(--s-3);
+  padding-left: calc(12px + var(--safe-left));
+  padding-right: calc(12px + var(--safe-right));
+}
+
+.mnc-settings { display: flex; justify-content: center; }
+.mnc-settings .segmented__opt { padding: 0 var(--s-3); }
+
+.mnc-pmark { width: 16px; height: 16px; flex: none; fill: color-mix(in srgb, currentColor 25%, transparent); stroke: currentColor; stroke-width: 2.2; }
+
+.mnc-status { min-height: 44px; font-size: var(--fs-md); text-wrap: balance; }
+
+.mnc-board {
+  display: grid;
+  grid-template-columns: minmax(0, 0.6fr) repeat(6, minmax(0, 1fr)) minmax(0, 0.6fr);
+  grid-template-rows: repeat(2, minmax(76px, auto));
+  gap: 3px;
+  width: min(100%, 520px);
+  margin: 0 auto;
+  padding: 5px;
+  background: var(--paper-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-1);
+}
+.mnc-row { display: contents; }
+.mnc-store--p2 { grid-column: 1; grid-row: 1 / span 2; }
+.mnc-store--p1 { grid-column: 8; grid-row: 1 / span 2; }
+
+.mnc-pit,
+.mnc-store {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px 2px;
+  border: 1.5px solid transparent;
+  background: var(--card);
+  box-shadow: inset 0 2px 4px color-mix(in srgb, var(--ink) 10%, transparent);
+  transition: border-color var(--dur), background-color var(--dur);
+}
+.mnc-pit {
+  border-radius: var(--r-md);
+  min-height: 76px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Counts sit nearest their owner: below for the bottom row, above for the top row. */
+.mnc-row--bottom .mnc-pit { flex-direction: column-reverse; justify-content: flex-start; }
+.mnc-row--top .mnc-pit { justify-content: flex-start; }
+
+.mnc-store {
+  justify-content: center;
+  gap: var(--s-2);
+  border-radius: var(--r-lg);
+  padding: var(--s-2) 0;
+}
+.mnc-store--p1 { color: var(--clay); }
+.mnc-store--p2 { color: var(--tide); }
+.mnc-store__count { color: var(--ink); font-weight: 700; font-size: var(--fs-lg); font-variant-numeric: tabular-nums; }
+
+.mnc-count { font-weight: 650; font-size: var(--fs-md); font-variant-numeric: tabular-nums; line-height: 1; color: var(--ink); }
+
+.mnc-seeds {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: 3px;
+  width: 33px;
+}
+.mnc-seed {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ochre);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--ink) 25%, transparent);
+}
+
+/* Whose pits are live: a tinted edge in the mover's colour (plus disabled pits fade). */
+.mnc-pit--p1.is-turn:not(:disabled) { border-color: color-mix(in srgb, var(--clay) 55%, transparent); }
+.mnc-pit--p2.is-turn:not(:disabled) { border-color: color-mix(in srgb, var(--tide) 55%, transparent); }
+.mnc-pit:disabled { cursor: default; }
+.mnc-board:not(.is-over) .mnc-pit:disabled:not(.is-turn) .mnc-count { color: var(--ink-2); }
+@media (hover: hover) {
+  .mnc-pit:hover:not(:disabled) { background: color-mix(in srgb, var(--card) 80%, var(--ochre-soft)); }
+}
+.mnc-pit:active:not(:disabled) { transform: scale(0.97); }
+
+/* The pit (or store) the last seed reached. */
+.mnc-pit.is-last,
+.mnc-store.is-last { background: var(--ochre-soft); border-color: var(--ochre); }
+.mnc-pit.is-last .mnc-count,
+.mnc-store.is-last .mnc-store__count { animation: idl-pop 200ms var(--ease); }
+
+.mnc-caption { text-align: center; margin-top: calc(-1 * var(--s-1)); }
+.mnc-sweep { font-size: var(--fs-sm); }

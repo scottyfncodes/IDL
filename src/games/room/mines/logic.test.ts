@@ -123,6 +123,13 @@ describe('mines: solver', () => {
     expect(solve(5, 4, fieldFrom(rows).mines, 0).solved).toBe(true);
   });
 
+  it('needs the subset rule where single-cell rules stall', () => {
+    // ...**  /  *....  /  .....  /  *....  — opened from row 4, column 3.
+    const m = [3, 4, 5, 15];
+    expect(solve(5, 4, m, 17, { subset: false, global: false }).solved).toBe(false);
+    expect(solve(5, 4, m, 17, { global: false }).solved).toBe(true);
+  });
+
   it('refuses a 50/50', () => {
     // After the opening, two cells share one mine with no way to tell them apart.
     const rows = ['...*', '....'];

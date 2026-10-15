@@ -351,7 +351,7 @@ export function chord(f: Field, i: number): Field {
   return finish(f, cells, isMine, exploded);
 }
 
-export const flagsPlaced = (f: Field) => f.cells.reduce((n, c) => n + (c === FLAGGED ? 1 : 0), 0);
+export const flagsPlaced = (f: Field) => f.cells.reduce<number>((n, c) => n + (c === FLAGGED ? 1 : 0), 0);
 export const minesLeft = (f: Field) => f.mineCount - flagsPlaced(f);
 
 export function formatTime(ms: number): string {
