@@ -69,8 +69,12 @@ export default function MemoryMatch() {
   // After the last pair, the result sits over the board; "View board" lifts it.
   const [viewingBoard, setViewingBoard] = useState(false);
   const playAgainRef = useRef<HTMLButtonElement>(null);
+  const afterPlayAgainRef = useRef<HTMLButtonElement>(null);
+  // Keep focus on a real control as the result card opens and closes, so
+  // keyboard and VoiceOver users never fall back to the top of the page.
   useEffect(() => {
-    if (over && !viewingBoard) playAgainRef.current?.focus({ preventScroll: true });
+    if (!over) return;
+    (viewingBoard ? afterPlayAgainRef : playAgainRef).current?.focus({ preventScroll: true });
   }, [over, viewingBoard]);
   const [, setTick] = useState(0);
   const segStart = useRef<number | null>(null);
@@ -221,7 +225,7 @@ export default function MemoryMatch() {
 
       {over && viewingBoard ? (
         <div className="button-row mm-after">
-          <Button variant="primary" size="sm" onClick={() => start(mode, size)}>Play again</Button>
+          <Button ref={afterPlayAgainRef} variant="primary" size="sm" onClick={() => start(mode, size)}>Play again</Button>
           <Button variant="quiet" size="sm" onClick={() => setViewingBoard(false)}>Show result</Button>
         </div>
       ) : (

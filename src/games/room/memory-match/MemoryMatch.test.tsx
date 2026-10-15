@@ -76,11 +76,14 @@ describe('Memory Match screen', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'View board' }));
     expect(container.querySelector('.mm-result')).toBeNull();
+    // Focus moves to the Play again that stays visible, not the page body.
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Play again' }));
     expect(card(1).getAttribute('aria-label')).toMatch(/matched by Player 1$/);
     // Play again stays reachable while viewing the board.
     expect(screen.getByRole('button', { name: 'Play again' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Show result' }));
     expect(container.querySelector('.mm-result')).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Play again' }));
 
     fireEvent.click(screen.getByRole('button', { name: 'Play again' }));
     expect(container.querySelector('.mm-result')).toBeNull();
