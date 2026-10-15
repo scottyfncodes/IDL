@@ -41,7 +41,7 @@ const initial = (): Saved => ({ opponent: 'friend', game: newGame(), hints: true
 const isValid = (s: Saved | undefined): s is Saved =>
   !!s && !!s.game && Array.isArray(s.game.board) && s.game.board.length === CELLS && Array.isArray(s.game.history);
 
-/** Player 1: solid disc with a fine inner ring. Player 2: pale disc with a dark outline. */
+/** Player 1: solid disc with a fine inner ring. Player 2: paper-filled disc with a strong outline. */
 export function Disc({ player, className = '' }: { player: Player; className?: string }) {
   return (
     <svg viewBox="0 0 40 40" className={`rv-disc rv-disc--p${player} ${className}`.trim()} aria-hidden="true">
@@ -170,7 +170,7 @@ export default function Reversi() {
   const cellLabel = (i: number) => {
     const c = game.board[i];
     const base = squareName(i).toUpperCase();
-    if (c) return `${base}: ${name(c)}${c === 1 ? ', solid disc' : ', pale disc'}${game.last === i ? ', last move' : ''}`;
+    if (c) return `${base}: ${name(c)}${c === 1 ? ', solid disc' : ', outlined disc'}${game.last === i ? ', last move' : ''}`;
     return `${base}: empty${legal.has(i) ? `, can play — flips ${flipsFor(game.board, i, game.turn).length}` : ''}`;
   };
 
@@ -184,7 +184,7 @@ export default function Reversi() {
         <>
           <p>Place a disc so that it traps a straight line of your opponent’s discs between it and another of yours. Every trapped disc flips to your side.</p>
           <ul>
-            <li><strong>{vsComputer ? 'You' : 'Player 1'}</strong> play{vsComputer ? '' : 's'} the solid discs and move first; <strong>{vsComputer ? COMPUTER_NAME : 'Player 2'}</strong> plays the pale, outlined discs.</li>
+            <li><strong>{vsComputer ? 'You' : 'Player 1'}</strong> play{vsComputer ? '' : 's'} the solid discs marked with a ring and move{vsComputer ? '' : 's'} first; <strong>{vsComputer ? COMPUTER_NAME : 'Player 2'}</strong> plays the outlined discs.</li>
             <li>Lines run across, down or diagonally, and one move can flip several lines at once.</li>
             <li>A move must flip at least one disc. With no such move, you pass.</li>
             <li>When neither side can move, the most discs wins. Small dots show where you can play.</li>
