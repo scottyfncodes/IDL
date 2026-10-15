@@ -62,6 +62,9 @@ const isValidState = (s: State | undefined): s is State =>
   !!s && (s.view === 'picker' || s.view === 'play') && typeof s.solved === 'object' && !!s.solved && typeof s.progress === 'object' && !!s.progress;
 
 const LONG_PRESS_MS = 400;
+const scrollTop = () => {
+  if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
+};
 const UNDO_CAP = 120;
 const SIZE_OPTIONS = (['5x5', '10x10'] as SizeId[]).map((v) => ({ value: v, label: SIZE_LABEL[v] }));
 
@@ -105,11 +108,11 @@ export default function PictureLogic() {
     // Re-opening a finished picture starts it again.
     const progress = !prog || prog.done ? { ...s.progress, [p.id]: freshProgress(p) } : s.progress;
     commit({ ...s, view: 'play', current: p.id, pickerSize: p.sizeId, progress });
-    window.scrollTo?.(0, 0);
+    scrollTop();
   };
   const toPicker = () => {
     commit({ ...stateRef.current, view: 'picker' });
-    window.scrollTo?.(0, 0);
+    scrollTop();
   };
 
   if (!puzzle) return <Picker state={state} solvedSet={solvedSet} onOpen={open} onSize={(z) => commit({ ...stateRef.current, pickerSize: z })} />;
