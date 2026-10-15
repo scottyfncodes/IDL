@@ -13,6 +13,7 @@ import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
 import { IconShare } from '../ui/icons';
 import { LoadFailed, Loading, NotFound } from './States';
+import { DailyStatsView } from '../daily/DailyStatsView';
 
 // Cache lazy modules so each game's chunk is requested once.
 const moduleCache = new Map<string, Promise<{ default: DailyModule }>>();
@@ -72,6 +73,10 @@ function CompletionPanel({ meta, date, record, module, puzzle }: { meta: DailyGa
           <Reveal puzzle={puzzle} record={record} />
         </div>
       )}
+      <div className="completion__stats">
+        <h3 className="completion__stats-title display">Your {meta.name} record</h3>
+        <DailyStatsView game={meta.id} highlight={date} />
+      </div>
     </section>
   );
 }

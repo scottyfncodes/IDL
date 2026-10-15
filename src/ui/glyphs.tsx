@@ -99,6 +99,51 @@ export const glyphs: Record<string, () => ReactElement> = {
       <path d="M33 33l5.5 5.5M38.5 33L33 38.5" stroke={A} strokeWidth="2.4" />
     </S>
   ),
+  reversi: () => (
+    <S>
+      <rect x="7" y="7" width="34" height="34" rx="4" />
+      <circle cx="18.5" cy="18.5" r="5.5" fill="currentColor" />
+      <circle cx="29.5" cy="29.5" r="5.5" fill="currentColor" />
+      <circle cx="29.5" cy="18.5" r="5.5" fill={A} stroke={A} />
+      <circle cx="18.5" cy="29.5" r="5.5" fill={A} stroke={A} />
+    </S>
+  ),
+  mancala: () => (
+    <S>
+      <rect x="4" y="14" width="40" height="20" rx="10" />
+      {[14, 21, 28].map((x) => <circle key={`t${x}`} cx={x + 3} cy="20" r="2.6" />)}
+      {[14, 21, 28].map((x) => <circle key={`b${x}`} cx={x + 3} cy="28" r="2.6" />)}
+      <circle cx="17" cy="20" r="1.1" fill={A} stroke="none" />
+      <circle cx="31" cy="28" r="1.1" fill={A} stroke="none" />
+      <circle cx="30" cy="27" r="1.1" fill={A} stroke="none" />
+    </S>
+  ),
+  mines: () => (
+    <S>
+      {[0, 1, 2].map((r) => [0, 1, 2].map((c) => (
+        <rect key={`${r}${c}`} x={7 + c * 12} y={7 + r * 12} width="10" height="10" rx="2" strokeWidth="1.5" fill={r === 0 || (r === 1 && c === 0) ? 'none' : 'color-mix(in srgb, currentColor 14%, transparent)'} />
+      )))}
+      <text x="12" y="15.5" fontSize="8" fill={A} stroke="none" textAnchor="middle" fontFamily="var(--font-ui)" fontWeight="700">1</text>
+      <text x="24" y="15.5" fontSize="8" fill="currentColor" stroke="none" textAnchor="middle" fontFamily="var(--font-ui)" fontWeight="700">2</text>
+      <path d="M33 33v-7l4 2-4 2" stroke={A} />
+    </S>
+  ),
+  'picture-logic': () => (
+    <S>
+      {[0, 1, 2, 3].map((r) => [0, 1, 2, 3].map((c) => {
+        const on = [[0, 1, 1, 0], [1, 1, 1, 1], [0, 1, 1, 0], [0, 1, 1, 0]][r][c];
+        return <rect key={`${r}${c}`} x={14 + c * 7.5} y={14 + r * 7.5} width="6.5" height="6.5" rx="1" strokeWidth="1.2" fill={on ? A : 'none'} stroke={on ? A : 'currentColor'} />;
+      }))}
+      <path d="M5 17.5h5M5 25h5M5 32.5h5M5 40h5M17.5 5v5M25 5v5M32.5 5v5M40 5v5" strokeWidth="1.6" />
+    </S>
+  ),
+  patience: () => (
+    <S>
+      <rect x="8" y="12" width="17" height="24" rx="2.5" transform="rotate(-8 16 24)" />
+      <rect x="20" y="10" width="17" height="24" rx="2.5" fill="var(--card)" />
+      <path d="M28.5 16.5c-2.2-2.6-5.5-.4-3.6 2.3l3.6 4 3.6-4c1.9-2.7-1.4-4.9-3.6-2.3z" fill={A} stroke={A} strokeWidth="1" />
+    </S>
+  ),
   'memory-match': () => (
     <S>
       <rect x="7" y="10" width="15" height="21" rx="3" />
