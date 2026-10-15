@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'react';
-import { DAILY_GAMES } from '../daily/registry';
+import { DAILY_GAMES, dailyMeta } from '../daily/registry';
+import type { DailyGameId } from '../daily/types';
+import { DailyStatsView } from '../daily/DailyStatsView';
+import { ROOM_GAMES } from '../room/registry';
+import { loadRoomStats, type RoomStats } from '../room/stats';
+import { Sheet } from '../ui/Sheet';
 import { dailyState } from '../daily/progress';
 import { addDays, LAUNCH_DATE, localEditionDate, monthLabel, type EditionDate } from '../lib/date';
 import { clearAll, keys, load, useStorageVersion } from '../lib/storage';
@@ -167,9 +172,54 @@ function Preferences() {
   );
 }
 
+function roomSummary(st: RoomStats): string[] {
+  const out: string[] = [];
+  const vs = (['easy', 'hard'] as const)
+    .filter((l) => st.vsComputer[l].played > 0)
+    .map((l) => {
+      const t = st.vsComputer[l];
+      return `vs idl ${l}: ${t.wins}–${t.losses}${t.draws ? `–${t.draws}` : ''}`;
+    });
+  out.push(...vs);
+  if (st.vsFriend) out.push(`${st.vsFriend} with a friend`);
+  if (st.completed) out.push(`${st.completed} solved`);
+  const bests = Object.entries(st.best);
+  if (bests.length) out.push(`best ${bests.map(([v, b]) => `${v} ${b.label}`).join(', ')}`);
+  return out;
+}
+
+function RoomShelf() {
+  useStorageVersion('stats:room:');
+  const rows = ROOM_GAMES.map((g) => ({ g, st: loadRoomStats(g.id) })).filter((r) => r.st.played > 0);
+  return (
+    <section aria-labelledby="room-shelf-title" className="library-section">
+      <div className="section-head">
+        <h2 id="room-shelf-title" className="section-title display">Game room</h2>
+        <a className="text-link" href={href('/play')}>Play</a>
+      </div>
+      {rows.length === 0 ? (
+        <p className="meta">Finished games show up here: wins against idl, games with friends and personal bests.</p>
+      ) : (
+        <ul className="room-shelf">
+          {rows.map(({ g, st }) => (
+            <li key={g.id}>
+              <a href={href(`/play/${g.id}`)}>
+                <span className="room-shelf__name">{g.name}</span>
+                <span className="room-shelf__count">{st.played} played</span>
+                <span className="room-shelf__detail meta">{roomSummary(st).join(' · ')}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 export function LibraryPage() {
   const today = localEditionDate();
   const stats = useStats();
+  const [recordFor, setRecordFor] = useState<DailyGameId | null>(null);
   return (
     <div className="page">
       <Masthead />
@@ -195,16 +245,30 @@ export function LibraryPage() {
         <ul className="per-game">
           {DAILY_GAMES.map((g) => (
             <li key={g.id}>
-              <a href={href(`/daily/${g.id}/${today}`)}>
+              <button type="button" className="per-game__row" onClick={() => setRecordFor(g.id)}>
                 <span>{g.name}</span>
                 <span className="meta">{stats.perGame[g.id] ?? 0} solved</span>
-              </a>
+                <IconChevron size={16} className="per-game__chev" />
+              </button>
             </li>
           ))}
         </ul>
       </section>
 
+      <RoomShelf />
+
       <Preferences />
+
+      <Sheet open={recordFor !== null} onClose={() => setRecordFor(null)} title={recordFor ? `${dailyMeta(recordFor)!.name} record` : 'Record'}>
+        {recordFor && (
+          <div className="record-sheet">
+            <DailyStatsView game={recordFor} highlight={today} />
+            <a className="btn btn--primary btn--md" href={href(`/daily/${recordFor}/${today}`)} onClick={() => setRecordFor(null)}>
+              <span>Play today’s {dailyMeta(recordFor)!.name}</span>
+            </a>
+          </div>
+        )}
+      </Sheet>
       <Footer />
     </div>
   );

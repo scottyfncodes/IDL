@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { usePersistentState } from '../../../lib/storage';
+import { recordRoomResult } from '../../../room/stats';
 import { freshSeed } from '../../../lib/rng';
 import { GameScreen } from '../../../ui/GameScreen';
 import { Button } from '../../../ui/Button';
@@ -23,6 +24,7 @@ import {
   isComplete,
   setMark,
   solutionRows,
+  solveScore,
   themeById,
   type Difficulty,
   type Mark,
@@ -38,6 +40,10 @@ interface Game {
   hints: number;
   checks: number;
   won: boolean;
+  /** Has the solve been recorded in stats? Guards against double counting. */
+  recorded?: boolean;
+  /** Was it a personal best (fewest hints + wrong checks) for this difficulty? */
+  newBest?: boolean;
 }
 
 interface State {
@@ -156,7 +162,10 @@ export default function MysteryGrid() {
     if (!r.complete) return;
     if (r.solved) {
       setNote(null);
-      update((g) => ({ ...g, checks: g.checks + 1, won: true }));
+      const newBest = game.recorded
+        ? !!game.newBest
+        : recordRoomResult('mystery-grid', { outcome: 'win', score: solveScore(game.puzzle.difficulty, game.hints, game.checks + 1) });
+      update((g) => ({ ...g, checks: g.checks + 1, won: true, recorded: true, newBest }));
     } else {
       setNote({
         text: r.wrong === 1 ? 'Close — 1 of the 12 matches isn’t right yet.' : `Not yet — ${r.wrong} of the 12 matches aren’t right.`,
@@ -216,6 +225,7 @@ export default function MysteryGrid() {
 
       {game.won && (
         <div className="end-card">
+          {game.newBest && <p className="eyebrow">New best</p>}
           <p className="end-card__title display">Case closed</p>
           <table className="mg-table">
             <thead>

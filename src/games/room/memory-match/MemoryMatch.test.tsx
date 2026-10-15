@@ -3,6 +3,7 @@ import MemoryMatch from './MemoryMatch';
 import { load, save } from '../../../lib/storage';
 import { newMatch, type MatchState } from './logic';
 import { motifName } from './content';
+import { loadRoomStats } from '../../../room/stats';
 
 const KEY = 'room:memory-match';
 const seedState = (match: MatchState) => save(KEY, { match, elapsedMs: 0, best: {}, newBest: false }, 1);
@@ -111,5 +112,37 @@ describe('Memory Match screen', () => {
     fireEvent.click(screen.getByRole('radio', { name: '4 × 6' }));
     // Board unchanged until confirmed.
     expect(screen.getAllByRole('button', { name: /^Card \d+,/ })).toHaveLength(16);
+  });
+
+  it('records each finished game exactly once (solo with a score, duo as a friend game)', () => {
+    const solve = (m: MatchState) => {
+      const done = new Set<number>();
+      for (let i = 0; i < m.deck.length; i++) {
+        if (done.has(i)) continue;
+        const p = m.deck.findIndex((x, k) => k !== i && x === m.deck[i]);
+        done.add(i).add(p);
+        fireEvent.click(card(i + 1));
+        fireEvent.click(card(p + 1));
+      }
+    };
+    const solo = newMatch('solo', '4x4', 77);
+    seedState(solo);
+    const first = render(<MemoryMatch />);
+    solve(solo);
+    let stats = loadRoomStats('memory-match');
+    expect(stats).toMatchObject({ played: 1, completed: 1 });
+    expect(stats.best['4x4']).toMatchObject({ value: 8, better: 'lower', label: '8 moves' });
+    first.rerender(<MemoryMatch />);
+    fireEvent.click(card(1));
+    first.unmount();
+    render(<MemoryMatch />).unmount();
+    expect(loadRoomStats('memory-match').played).toBe(1);
+
+    const duo = newMatch('duo', '4x4', 12);
+    seedState(duo);
+    render(<MemoryMatch />);
+    solve(duo);
+    stats = loadRoomStats('memory-match');
+    expect(stats).toMatchObject({ played: 2, completed: 1, vsFriend: 1 });
   });
 });

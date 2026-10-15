@@ -1,11 +1,16 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { usePersistentState } from '../../../lib/storage';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { load, usePersistentState } from '../../../lib/storage';
+import { createRng, freshSeed } from '../../../lib/rng';
+import { OpponentPicker } from '../../../ui/OpponentPicker';
+import { COMPUTER_NAME, HUMAN_NAME, useComputerMove } from '../../../room/computer';
+import { recordRoomResult, type Opponent, type RoomResult } from '../../../room/stats';
 import { GameScreen } from '../../../ui/GameScreen';
 import { Button } from '../../../ui/Button';
 import { Confirm } from '../../../ui/Confirm';
 import { Segmented } from '../../../ui/Segmented';
 import {
   applyMove,
+  chooseEdge,
   drawnCount,
   edgeKey,
   edgeOwner,
@@ -17,6 +22,7 @@ import {
   SIZES,
   winner,
   type Edge,
+  type MoveResult,
   type Player,
   type Size,
   type State,
@@ -27,11 +33,31 @@ interface Saved {
   game: State;
   /** Who started the current game; rematches alternate. */
   first: Player;
+  /** Against the computer, the human is always player 1 (clay, ✕). */
+  opponent: Opponent;
+  /** Has the finished game been recorded in stats? Guards against double counting. */
+  recorded: boolean;
 }
 
-const initial = (): Saved => ({ game: newGame(4, 1), first: 1 });
+const KEY = 'room:dots-boxes';
 
-const NAMES: Record<Player, string> = { 1: 'Player 1', 2: 'Player 2' };
+/** v1 had no opponent; carry an in-progress game over as a friend game. */
+function initial(): Saved {
+  const v1 = load<{ game: State; first: Player } | null>(KEY, null, 1);
+  if (v1 && v1.game && Array.isArray(v1.game.h) && Array.isArray(v1.game.v) && Array.isArray(v1.game.boxes)) {
+    return { game: v1.game, first: v1.first === 2 ? 2 : 1, opponent: 'friend', recorded: isOver(v1.game) };
+  }
+  return { game: newGame(4, 1), first: 1, opponent: 'friend', recorded: false };
+}
+
+const FRIEND_NAMES: Record<Player, string> = { 1: 'Player 1', 2: 'Player 2' };
+const IDL_NAMES: Record<Player, string> = { 1: HUMAN_NAME, 2: COMPUTER_NAME };
+const OPPONENT_LABEL: Record<Opponent, string> = { friend: 'a friend', easy: 'idl · easy', hard: 'idl · hard' };
+
+function resultFor(w: Player | 'tie' | null, opponent: Opponent): RoomResult {
+  if (opponent === 'friend') return { outcome: 'complete', opponent };
+  return { outcome: w === 'tie' ? 'draw' : w === 1 ? 'win' : 'loss', opponent };
+}
 const SIZE_OPTIONS = SIZES.map((n) => ({ value: String(n) as `${Size}`, label: `${n}×${n}` }));
 
 // SVG geometry (viewBox units).
@@ -56,12 +82,12 @@ function PlayerMark({ player, x, y, size, className = '' }: { player: Player; x?
   );
 }
 
-function edgeLabel(e: Edge, owner: 0 | Player): string {
+function edgeLabel(e: Edge, owner: 0 | Player, names: Record<Player, string>): string {
   const where =
     e.kind === 'h'
       ? `Horizontal line, row ${e.r + 1}, between dots ${e.c + 1} and ${e.c + 2}`
       : `Vertical line, column ${e.c + 1}, between dots ${e.r + 1} and ${e.r + 2}`;
-  return owner ? `${where}: drawn by ${NAMES[owner]}` : where;
+  return owner ? `${where}: drawn by ${names[owner]}` : where;
 }
 
 /** Endpoints of an edge in viewBox units. */
@@ -82,9 +108,12 @@ function hitPolygon(e: Edge): string {
 }
 
 export default function DotsBoxes() {
-  const [saved, setSaved] = usePersistentState<Saved>('room:dots-boxes', initial, 1);
-  const { game, first } = saved;
+  const [saved, setSaved] = usePersistentState<Saved>(KEY, initial, 2);
+  const { game, first, opponent } = saved;
+  const vsIdl = opponent !== 'friend';
+  const NAMES = vsIdl ? IDL_NAMES : FRIEND_NAMES;
   const [pendingSize, setPendingSize] = useState<Size | null>(null);
+  const [pendingOpponent, setPendingOpponent] = useState<Opponent | null>(null);
   const [confirmNew, setConfirmNew] = useState(false);
   const [flash, setFlash] = useState<{ id: number; text: string } | null>(null);
   const [fresh, setFresh] = useState<Set<string>>(new Set());
@@ -96,6 +125,7 @@ export default function DotsBoxes() {
   const started = drawnCount(game) > 0;
   const n = game.size;
   const vb = n * U + PAD * 2;
+  const idlTurn = vsIdl && !over && game.turn === 2;
 
   useEffect(() => {
     if (!flash) return;
@@ -103,21 +133,50 @@ export default function DotsBoxes() {
     return () => window.clearTimeout(t);
   }, [flash]);
 
-  const startGame = (size: Size, starter: Player) => {
-    setSaved({ game: newGame(size, starter), first: starter });
+  const startGame = (size: Size, starter: Player, against: Opponent = opponent) => {
+    setSaved({ game: newGame(size, starter), first: starter, opponent: against, recorded: false });
     setFlash(null);
     setFresh(new Set());
   };
 
+  /** Commit a move from either side; records the finished game exactly once. */
+  const commit = useCallback(
+    (res: MoveResult) => {
+      const done = isOver(res.state);
+      const recording = done && !saved.recorded;
+      if (recording) recordRoomResult('dots-boxes', resultFor(winner(res.state), saved.opponent));
+      setSaved({ ...saved, game: res.state, recorded: saved.recorded || recording });
+      setFresh(new Set(res.completed.map(([r, c]) => `${r}-${c}`)));
+      if (res.extraTurn) {
+        const two = res.completed.length === 2;
+        const text =
+          saved.opponent !== 'friend' && saved.game.turn === 2
+            ? `${COMPUTER_NAME} closes ${two ? 'two boxes' : 'a box'}`
+            : `${two ? 'Two boxes' : 'Box'}! Another turn`;
+        setFlash({ id: Date.now(), text });
+      } else setFlash(null);
+    },
+    [saved, setSaved],
+  );
+
   const onEdge = (e: Edge) => {
+    if (idlTurn) return;
     const res = applyMove(game, e);
-    if (!res) return;
-    setSaved({ ...saved, game: res.state });
-    setFresh(new Set(res.completed.map(([r, c]) => `${r}-${c}`)));
-    if (res.extraTurn) {
-      const boxes = res.completed.length === 2 ? 'Two boxes' : 'Box';
-      setFlash({ id: Date.now(), text: `${boxes}! Another turn` });
-    } else setFlash(null);
+    if (res) commit(res);
+  };
+
+  const idlMove = useCallback(() => {
+    if (saved.opponent === 'friend') return;
+    const e = chooseEdge(saved.game, saved.opponent, createRng(freshSeed()));
+    const res = e && applyMove(saved.game, e);
+    if (res) commit(res);
+  }, [saved, commit]);
+  useComputerMove(idlTurn, idlMove);
+
+  const requestOpponent = (o: Opponent) => {
+    if (o === opponent) return;
+    if (started && !over) setPendingOpponent(o);
+    else startGame(n, first, o);
   };
 
   const requestSize = (size: Size) => {
@@ -162,16 +221,21 @@ export default function DotsBoxes() {
   for (let r = 0; r <= n; r++) for (let c = 0; c < n; c++) edges.push({ kind: 'h', r, c });
   for (let r = 0; r < n; r++) for (let c = 0; c <= n; c++) edges.push({ kind: 'v', r, c });
 
+  const humanWon = vsIdl && w === 1;
   const status = over
     ? w === 'tie'
       ? `A tie at ${sc[1]}–${sc[2]}`
-      : `${NAMES[w as Player]} wins ${Math.max(sc[1], sc[2])}–${Math.min(sc[1], sc[2])}`
-    : `${NAMES[game.turn]} to draw a line`;
+      : `${NAMES[w as Player]} ${humanWon ? 'win' : 'wins'} ${Math.max(sc[1], sc[2])}–${Math.min(sc[1], sc[2])}`
+    : idlTurn
+      ? `${COMPUTER_NAME} is thinking…`
+      : vsIdl
+        ? 'Your turn to draw a line'
+        : `${NAMES[game.turn]} to draw a line`;
 
   return (
     <GameScreen
       title="Dots & Boxes"
-      kicker="2 players · one phone"
+      kicker={vsIdl ? `You vs ${OPPONENT_LABEL[opponent]}` : '2 players · one phone'}
       backTo="/play"
       className="db-screen"
       rules={
@@ -182,6 +246,7 @@ export default function DotsBoxes() {
             <li><strong>Player 1</strong> marks boxes with ✕, <strong>Player 2</strong> with ◯.</li>
             <li>When every line is drawn, the most boxes wins. Even boards can tie.</li>
             <li>Starts alternate each rematch.</li>
+            <li>Playing <strong>idl</strong>, the computer? You play ✕ and still alternate who starts.</li>
           </ul>
         </>
       }
@@ -191,6 +256,7 @@ export default function DotsBoxes() {
       ]}
     >
       <div className="db-top">
+        <OpponentPicker value={opponent} onChange={requestOpponent} />
         <Segmented label="Board size" options={SIZE_OPTIONS} value={String(n) as `${Size}`} onChange={(v) => requestSize(Number(v) as Size)} />
       </div>
 
@@ -207,6 +273,7 @@ export default function DotsBoxes() {
       <p className="status-line" aria-live="polite">
         {!over && <PlayerMark player={game.turn} size={18} className={`db-status-mark db-status-mark--p${game.turn}`} />}
         <span>{status}</span>
+        {vsIdl && !started && !over && <span className="meta">· {game.turn === 1 ? 'you start' : 'idl starts'}</span>}
         {flash && !over && (
           <span key={flash.id} className={`db-flash db-flash--p${game.turn}`}>
             {flash.text}
@@ -214,8 +281,8 @@ export default function DotsBoxes() {
         )}
       </p>
 
-      <div className={`db-board-wrap db-turn--p${game.turn}${over ? ' is-over' : ''}`}>
-        <svg ref={svgRef} className="db-board" viewBox={`0 0 ${vb} ${vb}`} role="group" aria-label={`Dots and Boxes board, ${n} by ${n} boxes`}>
+      <div className={`db-board-wrap db-turn--p${game.turn}${over ? ' is-over' : ''}${idlTurn ? ' is-waiting' : ''}`}>
+        <svg ref={svgRef} className="db-board" viewBox={`0 0 ${vb} ${vb}`} role="group" aria-label={`Dots and Boxes board, ${n} by ${n} boxes`} aria-busy={idlTurn || undefined}>
           {/* boxes */}
           {game.boxes.map((row, r) =>
             row.map((o, c) =>
@@ -236,14 +303,14 @@ export default function DotsBoxes() {
           {edges.map((e) => {
             const owner = edgeOwner(game, e);
             const [x1, y1, x2, y2] = endpoints(e);
-            const open = !owner && !over;
+            const open = !owner && !over && !idlTurn;
             return (
               <g
                 key={edgeKey(e)}
                 className={`db-edge${owner ? ` is-drawn db-edge--p${owner}` : ''}${sameEdge(game.last, e) ? ' is-last' : ''}`}
                 role="button"
                 tabIndex={open ? 0 : -1}
-                aria-label={edgeLabel(e, owner)}
+                aria-label={edgeLabel(e, owner, NAMES)}
                 aria-disabled={!open}
                 data-x={(x1 + x2) / 2}
                 data-y={(y1 + y2) / 2}
@@ -265,10 +332,10 @@ export default function DotsBoxes() {
       {over && (
         <section className="end-card" aria-labelledby="db-end-title">
           <h2 id="db-end-title" className="end-card__title display">
-            {w === 'tie' ? 'Dead even' : `${NAMES[w as Player]} takes it`}
+            {w === 'tie' ? 'Dead even' : humanWon ? 'You take it' : `${NAMES[w as Player]} takes it`}
           </h2>
           <p className="muted">
-            {w === 'tie' ? `Both players closed ${sc[1]} boxes.` : `${Math.max(sc[1], sc[2])} boxes to ${Math.min(sc[1], sc[2])}.`}
+            {w === 'tie' ? `${vsIdl ? 'You and idl each' : 'Both players'} closed ${sc[1]} boxes.` : `${Math.max(sc[1], sc[2])} boxes to ${Math.min(sc[1], sc[2])}.`}
           </p>
           <div className="end-card__actions">
             <Button variant="primary" size="lg" onClick={() => startGame(n, other(first))}>Rematch</Button>
@@ -290,6 +357,18 @@ export default function DotsBoxes() {
         onConfirm={() => {
           if (pendingSize) startGame(pendingSize, first);
           setPendingSize(null);
+        }}
+      />
+      <Confirm
+        open={pendingOpponent !== null}
+        title={`Play ${pendingOpponent ? OPPONENT_LABEL[pendingOpponent] : ''} instead?`}
+        message="This clears the current game. Boxes claimed so far won't count."
+        confirmLabel="Switch"
+        destructive
+        onCancel={() => setPendingOpponent(null)}
+        onConfirm={() => {
+          if (pendingOpponent) startGame(n, first, pendingOpponent);
+          setPendingOpponent(null);
         }}
       />
       <Confirm

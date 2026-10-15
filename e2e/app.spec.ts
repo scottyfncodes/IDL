@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const ROOM = ['dots-boxes', 'connect-four', 'battleship', 'sudoku', 'mystery-grid', 'tic-tac-toe', 'memory-match'];
+const ROOM = ['dots-boxes', 'connect-four', 'battleship', 'sudoku', 'mystery-grid', 'tic-tac-toe', 'memory-match', 'reversi', 'mancala', 'mines', 'picture-logic', 'patience'];
 const DAILY = ['linkup', 'wordcraft', 'sumwise', 'deduction', 'pattern', 'wordsteps'];
 
 async function noOverflow(page: Page) {

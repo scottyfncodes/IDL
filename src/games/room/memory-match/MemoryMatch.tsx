@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { usePersistentState } from '../../../lib/storage';
+import { recordRoomResult } from '../../../room/stats';
 import { freshSeed } from '../../../lib/rng';
 import { GameScreen } from '../../../ui/GameScreen';
 import { Button } from '../../../ui/Button';
@@ -35,6 +36,8 @@ interface Saved {
   best: Partial<Record<SizeId, Best>>;
   /** Was the finished solo game a new best? */
   newBest: boolean;
+  /** Has the finished game been recorded in stats? Guards against double counting. */
+  recorded?: boolean;
 }
 
 const MISMATCH_MS = 800;
@@ -139,6 +142,15 @@ export default function MemoryMatch() {
 
     if (isOver(next)) {
       segStart.current = null;
+      if (!saved.recorded) {
+        recordRoomResult(
+          'memory-match',
+          mode === 'solo'
+            ? { outcome: 'win', score: { variant: size, value: next.moves, better: 'lower', label: `${next.moves} moves` } }
+            : { outcome: 'complete', opponent: 'friend' },
+        );
+        s = { ...s, recorded: true };
+      }
       if (mode === 'solo') {
         const result: Best = { moves: next.moves, ms: s.elapsedMs };
         const isNew = isBetter(result, best[size]);
@@ -152,7 +164,7 @@ export default function MemoryMatch() {
     segStart.current = null;
     setViewingBoard(false);
     setNote('');
-    setStored({ ...saved, match: newMatch(m, z, freshSeed()), elapsedMs: 0, newBest: false });
+    setStored({ ...saved, match: newMatch(m, z, freshSeed()), elapsedMs: 0, newBest: false, recorded: false });
   };
   const requestStart = (m: Mode, z: SizeId) => (inProgress ? setPendingChange({ mode: m, size: z }) : start(m, z));
 

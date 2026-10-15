@@ -142,6 +142,9 @@
   transition: background-color var(--dur), color var(--dur);
 }
 .segmented__opt[aria-checked='true'] { background: var(--card); color: var(--ink); box-shadow: var(--shadow-1); }
+/* Visually 36px, but the tap area reaches 44px so options are easy to hit. */
+.segmented__opt { position: relative; }
+.segmented__opt::after { content: ''; position: absolute; inset: -4px 0; }
 
 /* ---------- Game screen chrome ---------- */
 .game-screen { min-height: 100dvh; display: flex; flex-direction: column; }

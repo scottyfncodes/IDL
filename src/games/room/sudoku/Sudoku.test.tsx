@@ -1,5 +1,7 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import Sudoku from './Sudoku';
+import { load } from '../../../lib/storage';
+import { loadRoomStats, recordRoomResult } from '../../../room/stats';
 
 function startEasy() {
   vi.useFakeTimers();
@@ -67,5 +69,53 @@ describe('Pocket Sudoku touch and keypad', () => {
     const label = empty.getAttribute('aria-label')!.split(':')[0];
     fireEvent.click(within(screen.getByRole('group', { name: 'Place a number' })).getAllByRole('button')[4]);
     expect(within(board()).getByRole('button', { name: new RegExp(`^${label}: 5`) })).toBeTruthy();
+  });
+
+  it('records a solved grid exactly once with its time, and shows New best', () => {
+    startEasy();
+    const game = () => load<{ game: { givens: number[]; solution: number[]; won: boolean } }>('room:sudoku', null as never, 1).game;
+    const { givens, solution } = game();
+    const pad = () => within(screen.getByRole('group', { name: 'Place a number' })).getAllByRole('button');
+    const cells = within(board()).getAllByRole('button');
+    // Box-major DOM order: map each button back to its row/column from the label.
+    const indexOf = (b: HTMLElement) => {
+      const [, r, c] = /^Row (\d), column (\d)/.exec(b.getAttribute('aria-label')!)!;
+      return (Number(r) - 1) * 9 + Number(c) - 1;
+    };
+    for (const b of cells) {
+      const i = indexOf(b);
+      if (givens[i]) continue;
+      fireEvent.click(b);
+      if (game().won) break;
+      fireEvent.click(pad()[solution[i] - 1]);
+    }
+    expect(game().won).toBe(true);
+    expect(screen.getByText('Solved')).toBeTruthy();
+    expect(screen.getByText('New best')).toBeTruthy();
+    const stats = loadRoomStats('sudoku');
+    expect(stats).toMatchObject({ played: 1, completed: 1 });
+    expect(stats.best.easy).toMatchObject({ better: 'lower', label: '0:00', value: 0 });
+    cleanup();
+    render(<Sudoku />);
+    expect(screen.getByText('Solved')).toBeTruthy();
+    expect(loadRoomStats('sudoku').played).toBe(1);
+  });
+
+  it('shows no New best when the time is slower than before', () => {
+    recordRoomResult('sudoku', { outcome: 'win', score: { variant: 'easy', value: -1, better: 'lower', label: 'fast' } });
+    startEasy();
+    const game = () => load<{ game: { givens: number[]; solution: number[]; won: boolean } }>('room:sudoku', null as never, 1).game;
+    const { givens, solution } = game();
+    for (const b of within(board()).getAllByRole('button')) {
+      const [, r, c] = /^Row (\d), column (\d)/.exec(b.getAttribute('aria-label')!)!;
+      const i = (Number(r) - 1) * 9 + Number(c) - 1;
+      if (givens[i]) continue;
+      fireEvent.click(b);
+      fireEvent.click(within(screen.getByRole('group', { name: 'Place a number' })).getAllByRole('button')[solution[i] - 1]);
+      if (game().won) break;
+    }
+    expect(screen.getByText('Solved')).toBeTruthy();
+    expect(screen.queryByText('New best')).toBeNull();
+    expect(loadRoomStats('sudoku').played).toBe(2);
   });
 });

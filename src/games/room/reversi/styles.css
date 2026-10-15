@@ -1,0 +1,113 @@
+/* Reversi. A little wider gutter-to-board on phones so the 8 columns get ~42px each. */
+.game-body.rv-body {
+  gap: var(--s-3);
+  padding-left: calc(12px + var(--safe-left));
+  padding-right: calc(12px + var(--safe-right));
+}
+
+.rv-settings { display: flex; justify-content: center; }
+.rv-settings .segmented__opt { padding: 0 var(--s-3); }
+
+.rv-status { min-height: 32px; }
+.rv-after { min-height: 32px; }
+.rv-chip-disc { width: 18px; height: 18px; flex: none; }
+
+.rv-stage { position: relative; display: grid; }
+
+.rv-board {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-rows: repeat(8, minmax(0, 1fr));
+  gap: 2px;
+  width: min(100%, 372px, calc(100dvh - 300px));
+  min-width: min(100%, 280px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  padding: 3px;
+  background: var(--line-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-1);
+}
+
+.rv-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: var(--moss-soft);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--dur);
+}
+.rv-board > .rv-cell:first-child { border-top-left-radius: calc(var(--r-md) - 3px); }
+.rv-board > .rv-cell:nth-child(8) { border-top-right-radius: calc(var(--r-md) - 3px); }
+.rv-board > .rv-cell:nth-child(57) { border-bottom-left-radius: calc(var(--r-md) - 3px); }
+.rv-board > .rv-cell:last-child { border-bottom-right-radius: calc(var(--r-md) - 3px); }
+.rv-cell[aria-disabled='true'] { cursor: default; }
+@media (hover: hover) {
+  .rv-cell.is-legal:hover { background: color-mix(in srgb, var(--moss-soft) 70%, var(--card)); }
+}
+.rv-cell:focus-visible { outline-offset: -2px; }
+.rv-cell.is-shake { animation: idl-shake 300ms ease; }
+
+/* Discs: solid ink with an inner ring vs pale paper with a dark outline. */
+.rv-disc { display: block; }
+.rv-cell .rv-disc { width: 84%; height: 84%; grid-area: 1 / 1; }
+.rv-disc--p1 .rv-disc__body { fill: var(--ink); }
+.rv-disc--p1 .rv-disc__mark { fill: none; stroke: var(--paper); stroke-width: 2; opacity: 0.45; }
+.rv-disc--p2 .rv-disc__body { fill: var(--paper); stroke: var(--ink); stroke-width: 2.5; }
+.rv-cell .rv-disc { filter: drop-shadow(0 1px 0.5px color-mix(in srgb, var(--ink) 25%, transparent)); }
+
+.rv-disc.is-placed { animation: idl-pop 240ms var(--ease); }
+.rv-disc.is-flipping { animation: rv-flip 340ms var(--ease) 60ms both; }
+@keyframes rv-flip {
+  0% { transform: scaleX(1); }
+  45% { transform: scaleX(0.08); }
+  100% { transform: scaleX(1); }
+}
+
+/* Where the player to move can go. */
+.rv-hint {
+  width: 22%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ink) 38%, transparent);
+  grid-area: 1 / 1;
+}
+
+/* The last disc played carries a small ochre corner tick plus a ring. */
+.rv-cell.is-last { box-shadow: inset 0 0 0 2px var(--ochre); }
+.rv-cell.is-last::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ochre);
+}
+
+.rv-board.is-waiting .rv-cell { cursor: progress; }
+.rv-board.is-over .rv-cell { cursor: default; }
+
+.rv-result {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: var(--s-3);
+  background: color-mix(in srgb, var(--paper) 55%, transparent);
+  -webkit-backdrop-filter: blur(1.5px);
+  backdrop-filter: blur(1.5px);
+  border-radius: var(--r-md);
+  animation: idl-fade 240ms ease;
+}
+.rv-result .end-card { width: min(100%, 320px); box-shadow: var(--shadow-2); gap: var(--s-3); padding: var(--s-5) var(--s-4); }
+.rv-result .end-card__title { font-size: var(--fs-2xl); }
+.rv-result__line { font-size: var(--fs-sm); }
+.rv-result .end-card__actions { flex-direction: column; align-items: stretch; gap: var(--s-2); width: 100%; max-width: 240px; }

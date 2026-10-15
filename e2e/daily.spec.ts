@@ -51,3 +51,23 @@ test('solve a Wordcraft edition, keep the result, share without spoilers', async
     expect(text.toLowerCase()).not.toContain(answer);
   }
 });
+
+test('a finished puzzle shows the player’s record with this result marked', async ({ page }) => {
+  await page.goto('/#/today');
+  await page.evaluate(() => {
+    const put = (k: string, v: unknown) => localStorage.setItem(`idl:${k}`, JSON.stringify({ v: 1, at: Date.now(), data: v }));
+    put('daily:wordcraft:2026-09-10', { status: 'won', state: { guesses: [] }, result: { score: '3/6' }, updatedAt: 1 });
+    put('daily:wordcraft:2026-09-11', { status: 'lost', state: { guesses: [] }, result: { score: 'X/6' }, updatedAt: 1 });
+  });
+  await page.goto('/#/daily/wordcraft/2026-09-10');
+  const record = page.locator('.completion__stats');
+  await expect(record.getByRole('heading', { name: 'Your Wordcraft record' })).toBeVisible();
+  await expect(record).toContainText('2');
+  await expect(record).toContainText('50%');
+  await expect(record.getByRole('listitem', { name: '3: 1, this result' })).toBeVisible();
+  await expect(record.getByRole('listitem', { name: 'X: 1' })).toBeVisible();
+  // The same record opens from the Library.
+  await page.goto('/#/library');
+  await page.getByRole('button', { name: /^Wordcraft/ }).click();
+  await expect(page.locator('dialog[open]').getByText('50%')).toBeVisible();
+});
