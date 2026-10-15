@@ -695,7 +695,7 @@ export default function Patience() {
               <div className="pt-waste" aria-label={board!.waste.length ? `Waste, ${board!.waste.length} cards` : 'Waste, empty'} role="group">
                 {wasteShown.map((c, i) => {
                   const isTop = i === wasteShown.length - 1;
-                  const style = { left: `calc(${i} * var(--pt-w) * 0.34)` };
+                  const style = { left: `calc(${i} * var(--pt-w) * 0.4)` };
                   return isTop ? (
                     faceButton(c, { pile: 'waste' }, `${cardName(c)}, top of the waste`, style)
                   ) : (
