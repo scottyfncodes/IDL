@@ -173,7 +173,7 @@ function minimax(s: State, me: Player, depth: number, alpha: number, beta: numbe
   return best;
 }
 
-export const HARD_DEPTH = 8;
+export const HARD_DEPTH = 7;
 
 /** Pick a pit for the player to move, or null when the game is over. Deterministic per rng. */
 export function chooseMove(s: State, level: Level, rng: Rng): number | null {

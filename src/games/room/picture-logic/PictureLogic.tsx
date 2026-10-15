@@ -105,8 +105,12 @@ export default function PictureLogic() {
     // Re-opening a finished picture starts it again.
     const progress = !prog || prog.done ? { ...s.progress, [p.id]: freshProgress(p) } : s.progress;
     commit({ ...s, view: 'play', current: p.id, pickerSize: p.sizeId, progress });
+    window.scrollTo?.(0, 0);
   };
-  const toPicker = () => commit({ ...stateRef.current, view: 'picker' });
+  const toPicker = () => {
+    commit({ ...stateRef.current, view: 'picker' });
+    window.scrollTo?.(0, 0);
+  };
 
   if (!puzzle) return <Picker state={state} solvedSet={solvedSet} onOpen={open} onSize={(z) => commit({ ...stateRef.current, pickerSize: z })} />;
   return <Play key={puzzle.id} puzzle={puzzle} state={state} stateRef={stateRef} commit={commit} solvedSet={solvedSet} onOpen={open} onPicker={toPicker} />;
@@ -212,6 +216,8 @@ function Play({ puzzle, state, stateRef, commit, solvedSet, onOpen, onPicker }: 
   const cellRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const focusCursor = useRef(false);
   const stroke = useRef<Stroke | null>(null);
+  /** Last pointer activity on the grid; clicks right after it are the pointer's own and are ignored. */
+  const lastPointerAt = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
 
   // ---- timer --------------------------------------------------------------
@@ -295,6 +301,7 @@ function Play({ puzzle, state, stateRef, commit, solvedSet, onOpen, onPicker }: 
   };
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    lastPointerAt.current = Date.now();
     if (done || stroke.current) return;
     if (e.pointerType === 'mouse' && e.button !== 0 && e.button !== 2) return;
     const i = cellAt(e.clientX, e.clientY);
@@ -334,6 +341,7 @@ function Play({ puzzle, state, stateRef, commit, solvedSet, onOpen, onPicker }: 
   };
   const endStroke = (e: ReactPointerEvent<HTMLDivElement>, cancelled = false) => {
     const st = stroke.current;
+    lastPointerAt.current = Date.now();
     if (!st || st.pointerId !== e.pointerId) return;
     if (st.timer !== null) window.clearTimeout(st.timer);
     stroke.current = null;
@@ -342,7 +350,7 @@ function Play({ puzzle, state, stateRef, commit, solvedSet, onOpen, onPicker }: 
     if (!cancelled) save(next);
   };
 
-  // Keyboard / assistive tech: a click with no pointer behind it (detail 0).
+  // Keyboard / assistive tech: a click with no pointer stroke behind it.
   const toggleAt = useCallback(
     (i: number, mark: 1 | 2) => {
       const cur = decodeMarks(stateRef.current.progress[puzzle.id]?.marks, size);
@@ -435,7 +443,7 @@ function Play({ puzzle, state, stateRef, commit, solvedSet, onOpen, onPicker }: 
       ]}
     >
       <div className="pl-bar">
-        <Button variant="quiet" size="sm" onClick={onPicker}>All pictures</Button>
+        <Button variant="quiet" size="sm" onClick={onPicker}>Pictures</Button>
         <span className="pl-bar__time" aria-label={`Time ${formatTime(elapsedS)}`}>{formatTime(elapsedS)}</span>
         {!done && (
           <span className="pl-bar__tools">
@@ -507,8 +515,8 @@ function Play({ puzzle, state, stateRef, commit, solvedSet, onOpen, onPicker }: 
                       aria-label={`Row ${r + 1} (clue ${rowClue}), column ${c + 1} (clue ${colClue}): ${m === FILL ? 'filled' : m === CROSS ? 'crossed' : 'blank'}`}
                       aria-disabled={done || undefined}
                       onFocus={() => setCursor(i)}
-                      onClick={(e) => {
-                        if (e.detail === 0 && !done) toggleAt(i, state.mode === 'cross' ? CROSS : FILL);
+                      onClick={() => {
+                        if (Date.now() - lastPointerAt.current > 800 && !done) toggleAt(i, state.mode === 'cross' ? CROSS : FILL);
                       }}
                     >
                       {m === CROSS && !done && <CrossGlyph />}

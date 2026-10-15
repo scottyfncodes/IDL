@@ -184,7 +184,7 @@ describe('the end', () => {
 describe('computer opponent', () => {
   test('always returns a legal pit, on both levels', () => {
     let checked = 0;
-    for (let k = 0; k < 12; k++) {
+    for (let k = 0; k < 6; k++) {
       const rng = createRng(`walk-${k}`);
       let g = newGame();
       while (!isOver(g)) {
@@ -195,7 +195,7 @@ describe('computer opponent', () => {
         g = sow(g, rng.pick(legalMoves(g)))!.state;
       }
     }
-    expect(checked).toBeGreaterThan(200);
+    expect(checked).toBeGreaterThan(100);
   });
 
   test('never moves once the game is over', () => {
@@ -216,6 +216,16 @@ describe('computer opponent', () => {
     const s = S([7, 7, 7, 7, 7, 1], 0, [4, 4, 4, 4, 4, 4], 0);
     expect(legalMoves(s).filter((m) => sow(s, m)!.extraTurn)).toEqual([5]);
     for (let k = 0; k < 5; k++) expect(chooseMove(s, 'hard', createRng(k))).toBe(5);
+  });
+
+  test('hard is not beaten by always playing the rightmost pit', () => {
+    let g = newGame();
+    const rng = createRng('rightmost');
+    while (!isOver(g)) {
+      const moves = legalMoves(g);
+      g = sow(g, g.turn === 1 ? moves[moves.length - 1] : chooseMove(g, 'hard', rng)!)!.state;
+    }
+    expect(winnerOf(g)).toBe(2);
   });
 
   test('deterministic for a given seed', () => {

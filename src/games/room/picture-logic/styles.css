@@ -104,16 +104,20 @@
   touch-action: manipulation;
 }
 .pl-tool:active { background: var(--paper-2); }
+@media (max-width: 374px) {
+  .pl-tool { padding: 0 10px; }
+  .pl-tool span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
 
 /* ---------- Board ----------
  * Cell size is derived from the width available, the grid size and the
  * longest row clue, so 10 × 10 with its clue gutter fits a 375px phone. */
 .pl-board {
   --avail: min(100vw - 12px - var(--safe-left) - var(--safe-right), 460px);
-  --cell: min(52px, calc((var(--avail) - 10px) / (var(--pl-n) + var(--pl-r) * 0.62)));
+  --cell: min(52px, calc((var(--avail) - 10px) / (var(--pl-n) + var(--pl-r) * 0.5)));
   --clue-fs: max(11px, calc(var(--cell) * 0.48));
   display: grid;
-  grid-template-columns: calc(var(--cell) * var(--pl-r) * 0.62 + 6px) calc(var(--cell) * var(--pl-n) + 2px);
+  grid-template-columns: calc(var(--cell) * var(--pl-r) * 0.5 + 6px) calc(var(--cell) * var(--pl-n) + 2px);
   grid-template-rows: calc(var(--cell) * var(--pl-c) * 0.66 + 6px) calc(var(--cell) * var(--pl-n) + 2px);
   justify-content: center;
   width: auto;
@@ -155,7 +159,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: calc(var(--cell) * 0.18);
+  gap: calc(var(--cell) * 0.06);
   padding-right: 2px;
   border-radius: 4px 0 0 4px;
   font-size: var(--clue-fs);
@@ -165,7 +169,7 @@
   transition: color var(--dur), opacity var(--dur);
 }
 .pl-rowclue:nth-child(odd) { background: color-mix(in srgb, var(--paper-2) 70%, transparent); }
-.pl-rowclue span { min-width: calc(var(--cell) * 0.44); text-align: center; }
+.pl-rowclue span { min-width: calc(var(--cell) * 0.4); text-align: center; }
 .pl-colclue.is-met,
 .pl-rowclue.is-met { color: var(--ink-3); opacity: 0.55; }
 

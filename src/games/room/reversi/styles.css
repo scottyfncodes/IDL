@@ -17,6 +17,7 @@
 .rv-board {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-rows: repeat(8, minmax(0, 1fr));
   gap: 2px;
   width: min(100%, 372px, calc(100dvh - 300px));
   min-width: min(100%, 280px);

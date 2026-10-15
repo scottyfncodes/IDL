@@ -93,7 +93,6 @@ export default function Mancala() {
   const { opponent, game, note } = saved;
   const vsComputer = opponent !== 'friend';
   const over = isOver(game);
-  const sc = score(game.pits);
   const winner = over ? winnerOf(game) : null;
 
   const [anim, setAnim] = useState<Anim | null>(null);
@@ -180,6 +179,8 @@ export default function Mancala() {
 
   const turnText = (p: Player) =>
     vsComputer ? (p === 1 ? 'Your turn.' : `${COMPUTER_NAME} is thinking…`) : `Player ${p}’s turn.`;
+  // Scores follow the animation, so a capture lands when the seeds do.
+  const sc = score(shown);
   let status: string;
   if (anim) status = `${name(note?.by ?? game.turn)} ${vsComputer && note?.by === 1 ? 'sow' : 'sows'} ${anim.path.length} seed${anim.path.length === 1 ? '' : 's'}…`;
   else if (over) status = winner === 0 ? `A draw, ${sc[1]}–${sc[2]}` : `${name(winner as Player)} ${vsComputer && winner === 1 ? 'win' : 'wins'}, ${Math.max(sc[1], sc[2])}–${Math.min(sc[1], sc[2])}`;
