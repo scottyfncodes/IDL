@@ -56,6 +56,41 @@ describe('Memory Match screen', () => {
     expect(stored().best['4x4']).toMatchObject({ moves: 8 });
   });
 
+  it('shows the result over the finished board, focused, with a way to view the board', () => {
+    const m = newMatch('duo', '4x6', 31);
+    seedState(m);
+    const { container } = render(<MemoryMatch />);
+    const done = new Set<number>();
+    for (let i = 0; i < m.deck.length; i++) {
+      if (done.has(i)) continue;
+      const p = m.deck.findIndex((x, k) => k !== i && x === m.deck[i]);
+      done.add(i).add(p);
+      fireEvent.click(card(i + 1));
+      fireEvent.click(card(p + 1));
+    }
+    // The result sits inside the board stage, not after it.
+    const stage = container.querySelector('.mm-stage')!;
+    expect(stage.querySelector('.mm-result [role="region"][aria-label="Result"]')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Player 1 wins' })).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Play again' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'View board' }));
+    expect(container.querySelector('.mm-result')).toBeNull();
+    // Focus moves to the Play again that stays visible, not the page body.
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Play again' }));
+    expect(card(1).getAttribute('aria-label')).toMatch(/matched by Player 1$/);
+    // Play again stays reachable while viewing the board.
+    expect(screen.getByRole('button', { name: 'Play again' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Show result' }));
+    expect(container.querySelector('.mm-result')).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Play again' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Play again' }));
+    expect(container.querySelector('.mm-result')).toBeNull();
+    expect(stored().match.scores).toEqual([0, 0]);
+    expect(stored().match.mode).toBe('duo');
+  });
+
   it('two players: a pair keeps the turn and is credited to the finder', () => {
     const m = newMatch('duo', '4x4', 5);
     seedState(m);

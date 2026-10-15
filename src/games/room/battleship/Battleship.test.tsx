@@ -27,6 +27,20 @@ function setUpBothFleets(container: HTMLElement) {
 }
 
 describe('Battleship screen', () => {
+  it('keeps every setup control in a compact layout: rotate up top, one dock row, actions with Ready', () => {
+    const { container } = render(<Battleship />);
+    click(/I'm Player 1 — place my fleet/);
+    const head = container.querySelector('.bs-setup-head')!;
+    expect(head.querySelector('.player-chip')).toBeTruthy();
+    const rotate = screen.getByRole('button', { name: /^Rotate\. Boats currently go across/ });
+    expect(head.contains(rotate)).toBe(true);
+    fireEvent.click(rotate);
+    expect(screen.getByRole('button', { name: /^Rotate\. Boats currently go down/ })).toBeTruthy();
+    expect(container.querySelectorAll('.bs-dock .bs-dock__ship')).toHaveLength(5);
+    const actions = container.querySelector('.bs-setup-actions')!;
+    for (const name of [/Random fleet/, 'Clear', 'Ready']) expect(actions.contains(screen.getByRole('button', { name }))).toBe(true);
+  });
+
   it('walks setup → handoff → attack without rendering secrets on handoff screens', () => {
     const { container } = render(<Battleship />);
     expect(screen.getByText('Player 1 hides their fleet first')).toBeTruthy();

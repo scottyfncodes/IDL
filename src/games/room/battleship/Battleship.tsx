@@ -354,8 +354,23 @@ export default function Battleship() {
 
     return (
       <>
-        <div className="scoreboard"><Chip p={p} active /></div>
-        <p className="status-line" aria-live="polite">{note || status}</p>
+        <div className="bs-setup-head">
+          <Chip p={p} active />
+          <Button
+            size="sm"
+            variant="quiet"
+            icon={<IconRotate size={18} />}
+            aria-label={`Rotate. Boats currently go ${orient === 'h' ? 'across' : 'down'}`}
+            onClick={() => {
+              setInvalid(null);
+              setOrient((o) => (o === 'h' ? 'v' : 'h'));
+              setNote('');
+            }}
+          >
+            {orient === 'h' ? 'Across' : 'Down'}
+          </Button>
+        </div>
+        <p className="status-line bs-setup-status" aria-live="polite">{note || status}</p>
         <Board
           label={`${NAMES[p]}'s waters, placing boats`}
           ships={fleet}
@@ -400,20 +415,7 @@ export default function Battleship() {
             );
           })}
         </div>
-        <div className="button-row">
-          <Button
-            size="sm"
-            variant="quiet"
-            icon={<IconRotate size={18} />}
-            aria-label={`Rotate. Boats currently go ${orient === 'h' ? 'across' : 'down'}`}
-            onClick={() => {
-              setInvalid(null);
-              setOrient((o) => (o === 'h' ? 'v' : 'h'));
-              setNote('');
-            }}
-          >
-            {orient === 'h' ? 'Across' : 'Down'}
-          </Button>
+        <div className="bs-setup-actions">
           <Button
             size="sm"
             variant="quiet"
@@ -438,22 +440,21 @@ export default function Battleship() {
           >
             Clear
           </Button>
+          <Button
+            variant="primary"
+            className="bs-ready"
+            disabled={!complete}
+            onClick={() => {
+              const g = confirmFleet(game);
+              if (g === game) return;
+              save(g);
+              resetSetupUi();
+              setView({ kind: 'handoff', to: g.turn });
+            }}
+          >
+            Ready
+          </Button>
         </div>
-        <Button
-          variant="primary"
-          size="lg"
-          block
-          disabled={!complete}
-          onClick={() => {
-            const g = confirmFleet(game);
-            if (g === game) return;
-            save(g);
-            resetSetupUi();
-            setView({ kind: 'handoff', to: g.turn });
-          }}
-        >
-          Ready
-        </Button>
       </>
     );
   }
