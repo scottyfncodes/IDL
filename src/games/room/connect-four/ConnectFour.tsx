@@ -1,22 +1,48 @@
-import { useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
-import { usePersistentState } from '../../../lib/storage';
+import { useCallback, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
+import { load, usePersistentState } from '../../../lib/storage';
+import { createRng, freshSeed } from '../../../lib/rng';
+import { OpponentPicker } from '../../../ui/OpponentPicker';
+import { COMPUTER_NAME, HUMAN_NAME, useComputerMove } from '../../../room/computer';
+import { recordRoomResult, type Opponent, type RoomResult } from '../../../room/stats';
 import { GameScreen } from '../../../ui/GameScreen';
 import { Button } from '../../../ui/Button';
 import { Confirm } from '../../../ui/Confirm';
 import { IconUndo } from '../../../ui/icons';
-import { boardOf, COLS, drop, landingRow, newGame, other, outcome, ROWS, turnOf, undo, type Game, type Player } from './logic';
+import { boardOf, chooseMove, COLS, drop, landingRow, newGame, other, outcome, ROWS, turnOf, undo, undoForHuman, type Game, type Outcome, type Player } from './logic';
 import './styles.css';
+
+type Score = { 1: number; 2: number; draws: number };
 
 interface Saved {
   game: Game;
-  score: { 1: number; 2: number; draws: number };
-  /** Has the finished round been added to the score? */
+  /** Against the computer, the human is always player 1 (clay, ✕). */
+  opponent: Opponent;
+  /** Running score per opponent. */
+  scores: Record<Opponent, Score>;
+  /** Has the finished round been scored and recorded? Guards against double counting. */
   counted: boolean;
 }
 
-const initial = (): Saved => ({ game: newGame(1), score: { 1: 0, 2: 0, draws: 0 }, counted: false });
+const KEY = 'room:connect-four';
+const zero = (): Score => ({ 1: 0, 2: 0, draws: 0 });
+const fresh = (): Saved => ({ game: newGame(1), opponent: 'friend', scores: { friend: zero(), easy: zero(), hard: zero() }, counted: false });
 
-const NAMES: Record<Player, string> = { 1: 'Player 1', 2: 'Player 2' };
+/** v1 kept a single friend score; carry it (and any round in progress) over. */
+function initial(): Saved {
+  const v1 = load<{ game: Game; score: Score; counted: boolean } | null>(KEY, null, 1);
+  const base = fresh();
+  if (!v1 || !v1.game || !Array.isArray(v1.game.moves) || !v1.score) return base;
+  return { ...base, game: v1.game, scores: { ...base.scores, friend: { ...zero(), ...v1.score } }, counted: !!v1.counted };
+}
+
+const FRIEND_NAMES: Record<Player, string> = { 1: 'Player 1', 2: 'Player 2' };
+const IDL_NAMES: Record<Player, string> = { 1: HUMAN_NAME, 2: COMPUTER_NAME };
+const OPPONENT_LABEL: Record<Opponent, string> = { friend: 'a friend', easy: 'idl · easy', hard: 'idl · hard' };
+
+function resultFor(o: Outcome, opponent: Opponent): RoomResult {
+  if (opponent === 'friend') return { outcome: 'complete', opponent };
+  return { outcome: o.draw ? 'draw' : o.winner === 1 ? 'win' : 'loss', opponent };
+}
 const SHAPE: Record<Player, string> = { 1: 'cross', 2: 'ring' };
 
 /** A disc with an inner mark: ✕ for player 1, ring for player 2. */
@@ -30,54 +56,85 @@ function Disc({ player, className = '', style }: { player: Player; className?: s
 }
 
 export default function ConnectFour() {
-  const [saved, setSaved] = usePersistentState<Saved>('room:connect-four', initial, 1);
+  const [saved, setSaved] = usePersistentState<Saved>(KEY, initial, 2);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [pendingOpponent, setPendingOpponent] = useState<Opponent | null>(null);
   const [confirmRestart, setConfirmRestart] = useState(false);
   // Index of the move that should animate (only discs dropped in this session).
   const [animMove, setAnimMove] = useState(-1);
   const [shakeCol, setShakeCol] = useState<number | null>(null);
   const colRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const { game, score } = saved;
+  const { game, opponent } = saved;
+  const score = saved.scores[opponent];
+  const vsIdl = opponent !== 'friend';
+  const NAMES = vsIdl ? IDL_NAMES : FRIEND_NAMES;
   const board = boardOf(game);
   const result = outcome(board);
   const over = result.winner !== null || result.draw;
   const current = turnOf(game);
+  const idlTurn = vsIdl && !over && current === 2;
+  const undone = vsIdl ? undoForHuman(game, 1) : undo(game);
   const winSet = new Set(result.cells?.map(([r, c]) => `${r}-${c}`));
   const lastIndex = game.moves.length - 1;
   const lastCol = lastIndex >= 0 ? game.moves[lastIndex] : -1;
   const lastRow = lastCol >= 0 ? landingRow(boardOf({ first: game.first, moves: game.moves.slice(0, -1) }), lastCol) : -1;
 
+  /** Commit a move from either side; scores and records the round exactly once when it ends. */
+  const commit = useCallback(
+    (next: Game) => {
+      const o = outcome(boardOf(next));
+      const done = o.winner !== null || o.draw;
+      const s = saved.scores[saved.opponent];
+      const counting = done && !saved.counted;
+      if (counting) recordRoomResult('connect-four', resultFor(o, saved.opponent));
+      setAnimMove(next.moves.length - 1);
+      setShakeCol(null);
+      setSaved({
+        ...saved,
+        game: next,
+        counted: done,
+        scores: counting
+          ? { ...saved.scores, [saved.opponent]: { 1: s[1] + (o.winner === 1 ? 1 : 0), 2: s[2] + (o.winner === 2 ? 1 : 0), draws: s.draws + (o.draw ? 1 : 0) } }
+          : saved.scores,
+      });
+    },
+    [saved, setSaved],
+  );
+
   const onColumn = (col: number) => {
-    if (over) return;
+    if (over || idlTurn) return;
     const res = drop(game, col);
     if (!res) {
       setShakeCol(col);
       return;
     }
-    const o = outcome(boardOf(res.game));
-    const done = o.winner !== null || o.draw;
-    setAnimMove(res.game.moves.length - 1);
-    setShakeCol(null);
-    setSaved({
-      ...saved,
-      game: res.game,
-      counted: done,
-      score: done
-        ? {
-            1: score[1] + (o.winner === 1 ? 1 : 0),
-            2: score[2] + (o.winner === 2 ? 1 : 0),
-            draws: score.draws + (o.draw ? 1 : 0),
-          }
-        : score,
-    });
+    commit(res.game);
   };
 
+  const idlMove = useCallback(() => {
+    if (saved.opponent === 'friend') return;
+    const col = chooseMove(saved.game, saved.opponent, createRng(freshSeed()));
+    const res = col === null ? null : drop(saved.game, col);
+    if (res) commit(res.game);
+  }, [saved, commit]);
+  useComputerMove(idlTurn, idlMove);
+
+  // Vs idl, undo takes back your move and idl's reply.
   const onUndo = () => {
-    const u = undo(game);
-    if (!u) return;
+    if (!undone) return;
     setAnimMove(-1);
-    setSaved({ ...saved, game: u });
+    setSaved({ ...saved, game: undone });
+  };
+
+  const switchOpponent = (o: Opponent) => {
+    setAnimMove(-1);
+    setSaved({ ...saved, opponent: o, game: newGame(game.first), counted: false });
+  };
+  const requestOpponent = (o: Opponent) => {
+    if (o === opponent) return;
+    if (game.moves.length > 0 && !over) setPendingOpponent(o);
+    else switchOpponent(o);
   };
 
   // Starter alternates every round.
@@ -102,15 +159,20 @@ export default function ConnectFour() {
   };
 
   const status = result.winner
-    ? `${NAMES[result.winner]} connects four`
+    ? `${NAMES[result.winner]} ${vsIdl && result.winner === 1 ? 'connect' : 'connects'} four`
     : result.draw
       ? 'Board full. A draw.'
-      : `${NAMES[current]} to drop`;
+      : idlTurn
+        ? `${COMPUTER_NAME} is thinking…`
+        : vsIdl
+          ? 'Your turn to drop'
+          : `${NAMES[current]} to drop`;
+  const nextStarter = NAMES[other(game.first)];
 
   return (
     <GameScreen
       title="Connect Four"
-      kicker="2 players · one phone"
+      kicker={vsIdl ? `You vs ${OPPONENT_LABEL[opponent]}` : '2 players · one phone'}
       backTo="/play"
       className="c4-screen"
       rules={
@@ -120,32 +182,38 @@ export default function ConnectFour() {
             <li><strong>Player 1</strong> plays discs marked ✕, <strong>Player 2</strong> discs marked with a ring.</li>
             <li>Tap anywhere in a column to drop. On a keyboard, use ← → and Enter.</li>
             <li>A full board with no line is a draw. Starts alternate each round.</li>
+            <li>Playing <strong>idl</strong>, the computer? You drop ✕ discs and still alternate who starts. Undo takes back your move and idl’s reply.</li>
           </ul>
         </>
       }
       menu={[
-        { label: 'Undo last move', onSelect: onUndo, disabled: over || game.moves.length === 0 },
+        { label: 'Undo last move', onSelect: onUndo, disabled: !undone },
         { label: 'Restart this round', onSelect: () => setConfirmRestart(true), disabled: over || game.moves.length === 0 },
         { label: 'Reset scores', onSelect: () => setConfirmReset(true), destructive: true },
       ]}
     >
-      <div className="scoreboard">
-        {([1, 2] as Player[]).map((p) => (
-          <span key={p} className={`player-chip player-chip--p${p}`} data-active={!over && current === p}>
-            <Disc player={p} className="c4-chip-disc" />
-            <span className="player-chip__name">{NAMES[p]}</span>
-            <span className="player-chip__score" aria-label={`${score[p]} rounds won`}>{score[p]}</span>
-          </span>
-        ))}
+      <div className="c4-top">
+        <OpponentPicker value={opponent} onChange={requestOpponent} />
+        <div className="scoreboard">
+          {([1, 2] as Player[]).map((p) => (
+            <span key={p} className={`player-chip player-chip--p${p}`} data-active={!over && current === p}>
+              <Disc player={p} className="c4-chip-disc" />
+              <span className="player-chip__name">{NAMES[p]}</span>
+              <span className="player-chip__score" aria-label={`${score[p]} rounds won`}>{score[p]}</span>
+            </span>
+          ))}
+        </div>
       </div>
 
       <p className="status-line" aria-live="polite">
         {!over && <Disc player={current} className="c4-chip-disc" />}
         <span>{status}</span>
+        {vsIdl && !over && game.moves.length === 0 && <span className="meta">· {game.first === 1 ? 'you start' : 'idl starts'}</span>}
       </p>
 
       <div
-        className={`c4-board c4-turn--p${current}${over ? ' is-over' : ''}${result.winner ? ' has-win' : ''}`}
+        className={`c4-board c4-turn--p${current}${over ? ' is-over' : ''}${result.winner ? ' has-win' : ''}${idlTurn ? ' is-waiting' : ''}`}
+        aria-busy={idlTurn || undefined}
         role="group"
         aria-label="Connect Four board, 7 columns"
         style={{ '--c4-rows': ROWS } as CSSProperties}
@@ -158,7 +226,9 @@ export default function ConnectFour() {
             ? `Column ${col + 1}, ${filled} of ${ROWS} filled`
             : full
               ? `Column ${col + 1}, full`
-              : `Column ${col + 1}, ${filled} of ${ROWS} filled. Drop ${NAMES[current]} disc`;
+              : idlTurn
+                ? `Column ${col + 1}, ${filled} of ${ROWS} filled`
+                : `Column ${col + 1}, ${filled} of ${ROWS} filled. Drop ${vsIdl ? 'your' : NAMES[current]} disc`;
           return (
             <button
               key={col}
@@ -168,8 +238,8 @@ export default function ConnectFour() {
               type="button"
               className={`c4-col${full ? ' is-full' : ''}${shakeCol === col ? ' anim-shake' : ''}`}
               aria-label={label}
-              aria-disabled={over || full}
-              disabled={over}
+              aria-disabled={over || full || idlTurn}
+              disabled={over || idlTurn}
               onClick={() => onColumn(col)}
               onKeyDown={(ev) => onKey(ev, col)}
               onAnimationEnd={(ev) => {
@@ -189,7 +259,7 @@ export default function ConnectFour() {
                         className={isLast && animMove === lastIndex ? 'is-dropping' : ''}
                         style={{ '--c4-from': row + 1 } as CSSProperties}
                       />
-                    ) : row === land && !over ? (
+                    ) : row === land && !over && !idlTurn ? (
                       <Disc player={current} className="c4-ghost" />
                     ) : null}
                     {winning && <span className="c4-win-marker" aria-hidden="true" />}
@@ -203,7 +273,7 @@ export default function ConnectFour() {
 
       {!over && (
         <div className="button-row">
-          <Button variant="quiet" size="sm" icon={<IconUndo size={18} />} onClick={onUndo} disabled={game.moves.length === 0}>
+          <Button variant="quiet" size="sm" icon={<IconUndo size={18} />} onClick={onUndo} disabled={!undone}>
             Undo
           </Button>
         </div>
@@ -212,12 +282,12 @@ export default function ConnectFour() {
       {over && (
         <section className="end-card" aria-labelledby="c4-end-title">
           <h2 id="c4-end-title" className="end-card__title display">
-            {result.winner ? `${NAMES[result.winner]} wins` : 'A draw'}
+            {result.winner ? `${NAMES[result.winner]} ${vsIdl && result.winner === 1 ? 'win' : 'wins'}` : 'A draw'}
           </h2>
           <p className="muted">
             {result.winner
-              ? `Four ${SHAPE[result.winner]} discs in a line. ${NAMES[other(game.first)]} starts the next round.`
-              : `Nobody got four. ${NAMES[other(game.first)]} starts the next round.`}
+              ? `Four ${SHAPE[result.winner]} discs in a line. ${nextStarter} ${vsIdl && other(game.first) === 1 ? 'start' : 'starts'} the next round.`
+              : `Nobody got four. ${nextStarter} ${vsIdl && other(game.first) === 1 ? 'start' : 'starts'} the next round.`}
           </p>
           <div className="end-card__actions">
             <Button variant="primary" size="lg" onClick={nextRound}>Rematch</Button>
@@ -226,6 +296,18 @@ export default function ConnectFour() {
       )}
       {score.draws > 0 && <p className="meta c4-draws">Draws so far: {score.draws}</p>}
 
+      <Confirm
+        open={pendingOpponent !== null}
+        title={`Play ${pendingOpponent ? OPPONENT_LABEL[pendingOpponent] : ''} instead?`}
+        message="This round is abandoned and the board clears. Scores are kept."
+        confirmLabel="Switch"
+        destructive
+        onCancel={() => setPendingOpponent(null)}
+        onConfirm={() => {
+          if (pendingOpponent) switchOpponent(pendingOpponent);
+          setPendingOpponent(null);
+        }}
+      />
       <Confirm
         open={confirmRestart}
         title="Restart this round?"
@@ -249,7 +331,7 @@ export default function ConnectFour() {
         onConfirm={() => {
           setConfirmReset(false);
           setAnimMove(-1);
-          setSaved(initial());
+          setSaved({ ...saved, game: newGame(1), counted: false, scores: { ...saved.scores, [opponent]: zero() } });
         }}
       />
     </GameScreen>

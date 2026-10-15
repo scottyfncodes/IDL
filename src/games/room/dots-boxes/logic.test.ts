@@ -1,7 +1,13 @@
 import { createRng } from '../../../lib/rng';
 import {
   applyMove,
+  boxesGivenAway,
   boxesTouching,
+  capturingEdges,
+  chooseEdge,
+  givesThirdSide,
+  safeEdges,
+  sameEdge,
   drawnCount,
   inBounds,
   isLegal,
@@ -204,5 +210,116 @@ describe('dots & boxes: endgame', () => {
       expect(w).toBe(sc[1] > sc[2] ? 1 : sc[2] > sc[1] ? 2 : 'tie');
       if (n % 2 === 1) expect(w).not.toBe('tie');
     }
+  });
+});
+
+describe('dots & boxes: computer opponent', () => {
+  /** All edges drawn except `open`; unlisted boxes get alternating owners if fully enclosed. */
+  function position(size: Size, open: Edge[], turn: Player): State {
+    const s = newGame(size, turn);
+    s.h = s.h.map((row) => row.map(() => 1 as const));
+    s.v = s.v.map((row) => row.map(() => 1 as const));
+    for (const e of open) (e.kind === 'h' ? s.h : s.v)[e.r][e.c] = 0;
+    let k = 0;
+    s.boxes = s.boxes.map((row, r) => row.map((_, c) => (sidesDrawn4(s, r, c) ? ((k++ % 2) + 1) as Player : 0)));
+    return s;
+  }
+  const sidesDrawn4 = (s: State, r: number, c: number) => !!(s.h[r][c] && s.h[r + 1][c] && s.v[r][c] && s.v[r][c + 1]);
+
+  it('takes a box on offer (hard always, easy usually)', () => {
+    // Box (0,0) has three sides; V(0,1) closes it.
+    const s = play(newGame(3), [H(0, 0), H(1, 0), V(0, 0)]);
+    expect(capturingEdges(s)).toEqual([V(0, 1)]);
+    for (let k = 0; k < 10; k++) expect(chooseEdge(s, 'hard', createRng(k))).toEqual(V(0, 1));
+    const easyTakes = Array.from({ length: 40 }, (_, k) => sameEdge(chooseEdge(s, 'easy', createRng(k)), V(0, 1))).filter(Boolean).length;
+    expect(easyTakes).toBeGreaterThan(20);
+    expect(easyTakes).toBeLessThan(40);
+  });
+
+  it('hard never gives a third side while a safe line exists', () => {
+    for (const n of SIZES) {
+      for (let g = 0; g < 15; g++) {
+        const rng = createRng(`db-safe-${n}-${g}`);
+        let s = newGame(n, g % 2 ? 1 : 2);
+        while (!isOver(s)) {
+          let e: Edge;
+          if (s.turn === 2) {
+            const hadSafe = safeEdges(s).length > 0;
+            const hadCapture = capturingEdges(s).length > 0;
+            e = chooseEdge(s, 'hard', rng)!;
+            if (hadCapture) expect(capturingEdges(s)).toContainEqual(e);
+            else if (hadSafe) expect(givesThirdSide(s, e)).toBe(false);
+          } else e = rng.pick(legalMoves(s));
+          s = applyMove(s, e)!.state;
+        }
+      }
+    }
+  });
+
+  it('in the endgame, opens the shortest chain', () => {
+    // 3×3: top row is an open chain of three; box (2,0) is a lone box with two
+    // open sides on the border. Every line gives something away.
+    const s = position(3, [V(0, 0), V(0, 1), V(0, 2), V(0, 3), V(2, 0), H(3, 0)], 2);
+    expect(safeEdges(s)).toEqual([]);
+    expect(capturingEdges(s)).toEqual([]);
+    expect(boxesGivenAway(s, V(0, 1))).toBe(3);
+    expect(boxesGivenAway(s, V(2, 0))).toBe(1);
+    for (let k = 0; k < 10; k++) {
+      const e = chooseEdge(s, 'hard', createRng(k))!;
+      expect([V(2, 0), H(3, 0)]).toContainEqual(e);
+    }
+  });
+
+  it('always returns a legal line, and nothing once the game is over', () => {
+    for (const level of ['easy', 'hard'] as const) {
+      const rng = createRng(`db-legal-${level}`);
+      let s = newGame(4, 1);
+      while (!isOver(s)) {
+        const e = chooseEdge(s, level, rng)!;
+        expect(isLegal(s, e)).toBe(true);
+        s = applyMove(s, e)!.state;
+      }
+      expect(chooseEdge(s, level, rng)).toBeNull();
+    }
+  });
+
+  it('hard beats a random player nearly always, and beats easy more often than not', () => {
+    let vsRandom = 0;
+    let vsEasy = 0;
+    const games = 20;
+    for (let g = 0; g < games; g++) {
+      for (const opp of ['random', 'easy'] as const) {
+        const rng = createRng(`db-strength-${opp}-${g}`);
+        let s = newGame(4, g % 2 ? 1 : 2);
+        while (!isOver(s)) {
+          const e = s.turn === 2 ? chooseEdge(s, 'hard', rng)! : opp === 'random' ? rng.pick(legalMoves(s)) : chooseEdge(s, 'easy', rng)!;
+          s = applyMove(s, e)!.state;
+        }
+        if (winner(s) === 2) {
+          if (opp === 'random') vsRandom++;
+          else vsEasy++;
+        }
+      }
+    }
+    expect(vsRandom).toBeGreaterThanOrEqual(games - 1);
+    expect(vsEasy).toBeGreaterThan(games / 2);
+  });
+
+  it('is deterministic for a seed', () => {
+    const s = play(newGame(4), [H(0, 0), V(1, 1), H(2, 2)]);
+    for (const level of ['easy', 'hard'] as const) expect(chooseEdge(s, level, createRng(3))).toEqual(chooseEdge(s, level, createRng(3)));
+  });
+
+  it('answers quickly on the biggest board', () => {
+    const rng = createRng('db-speed');
+    let s = newGame(5, 1);
+    let worst = 0;
+    while (!isOver(s)) {
+      const t = performance.now();
+      const e = chooseEdge(s, 'hard', rng)!;
+      worst = Math.max(worst, performance.now() - t);
+      s = applyMove(s, e)!.state;
+    }
+    expect(worst).toBeLessThan(100);
   });
 });

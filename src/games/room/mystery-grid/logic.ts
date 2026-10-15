@@ -358,3 +358,14 @@ export function cellLabel(theme: Theme, cell: number): { row: string; col: strin
 export function solutionRows(theme: Theme, solution: Assign): string[][] {
   return [0, 1, 2, 3].map((p) => theme.categories.map((cat, k) => cat.items[solution[k][p]]));
 }
+
+/**
+ * Personal-best score for a solve: hints taken plus checks that came back
+ * wrong (lower is better). There's no clock in Mystery Grid.
+ */
+export function solveScore(difficulty: Difficulty, hints: number, checks: number): { variant: string; value: number; better: 'lower'; label: string } {
+  const wrong = Math.max(0, checks - 1);
+  const parts = [hints === 0 ? 'No hints' : `${hints} hint${hints === 1 ? '' : 's'}`];
+  if (wrong) parts.push(`${wrong} wrong check${wrong === 1 ? '' : 's'}`);
+  return { variant: difficulty, value: hints + wrong, better: 'lower', label: parts.join(' · ') };
+}

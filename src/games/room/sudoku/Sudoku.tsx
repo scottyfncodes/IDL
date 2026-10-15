@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { usePersistentState } from '../../../lib/storage';
+import { recordRoomResult } from '../../../room/stats';
 import { freshSeed } from '../../../lib/rng';
 import { GameScreen } from '../../../ui/GameScreen';
 import { Button } from '../../../ui/Button';
@@ -43,6 +44,10 @@ interface Game {
   elapsed: number; // ms
   history: Change[];
   won: boolean;
+  /** Has the win been recorded in stats? Guards against double counting. */
+  recorded?: boolean;
+  /** Was the recorded time a personal best for this difficulty? */
+  newBest?: boolean;
 }
 
 interface State {
@@ -137,6 +142,15 @@ export default function Sudoku() {
         const r = fn({ givens: g.givens, values: g.values, notes: g.notes }, g);
         if (!r.change) return s;
         const won = isWon(r.board.values, g.solution);
+        // The persistent setter runs this updater exactly once, against the
+        // latest saved state, so the win is recorded once per grid.
+        const record = won && !g.recorded;
+        const newBest = record
+          ? recordRoomResult('sudoku', {
+              outcome: 'win',
+              score: { variant: g.difficulty, value: Math.floor(g.elapsed / 1000), better: 'lower', label: formatTime(g.elapsed) },
+            })
+          : !!g.newBest;
         return {
           ...s,
           game: {
@@ -146,6 +160,8 @@ export default function Sudoku() {
             mistakes: g.mistakes + (r.mistake ? 1 : 0),
             history: [...g.history, r.change].slice(-HISTORY_CAP),
             won,
+            recorded: g.recorded || record,
+            newBest,
           },
         };
       });
@@ -413,6 +429,7 @@ export default function Sudoku() {
 
           {game.won ? (
             <div className="end-card">
+              {game.newBest && <p className="eyebrow">New best</p>}
               <p className="end-card__title display">Solved</p>
               <dl className="sdk-stats">
                 <div><dt>Time</dt><dd>{formatTime(game.elapsed)}</dd></div>

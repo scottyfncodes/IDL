@@ -1,5 +1,6 @@
 import { useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { usePersistentState } from '../../../lib/storage';
+import { recordRoomResult } from '../../../room/stats';
 import { createRng, freshSeed } from '../../../lib/rng';
 import { GameScreen } from '../../../ui/GameScreen';
 import { Button } from '../../../ui/Button';
@@ -43,6 +44,8 @@ import './styles.css';
 interface Saved {
   game: Game;
   score: [number, number];
+  /** Has this finished game been recorded in stats? Guards against double counting. */
+  recorded?: boolean;
 }
 
 const initial = (): Saved => ({ game: newGame(0), score: [0, 0] });
@@ -480,7 +483,8 @@ export default function Battleship() {
       if (r.outcome.kind === 'hit' && r.outcome.won) {
         const s: [number, number] = [score[0], score[1]];
         s[p] += 1;
-        save(r.game, s);
+        if (!data.recorded) recordRoomResult('battleship', { outcome: 'complete', opponent: 'friend' });
+        setSaved({ game: r.game, score: s, recorded: true });
         setView({ kind: 'over' });
         return;
       }

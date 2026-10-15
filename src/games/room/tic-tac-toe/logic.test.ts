@@ -68,10 +68,10 @@ describe('tic-tac-toe computer opponent', () => {
   });
 
   it('takes an immediate win on both levels, and hard blocks an immediate loss', () => {
-    // O to move (X started, 4 placed): O wins on 5.
-    const win = b('X  OO   X');
+    // O to move (X started, 5 placed): O wins on 2.
+    const win = b('X   OXOX ');
     for (const level of ['easy', 'hard'] as const) {
-      for (let s = 0; s < 20; s++) expect(chooseMove(win, 'X', level, createRng(s))).toBe(5);
+      for (let s = 0; s < 20; s++) expect(chooseMove(win, 'X', level, createRng(s))).toBe(2);
     }
     // X threatens 0-1-2; O must block at 2.
     const block = b('XX  O    ');

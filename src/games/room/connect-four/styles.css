@@ -92,3 +92,6 @@
 .c4-chip-disc .c4-disc__mark { stroke-width: 4; }
 
 .c4-draws { text-align: center; }
+
+.c4-top { display: grid; gap: var(--s-3); justify-items: center; }
+.c4-board.is-waiting .c4-col:disabled { cursor: progress; }

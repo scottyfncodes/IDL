@@ -1,4 +1,6 @@
 /** Dots & Boxes rules. Pure functions, no React. */
+import type { Rng } from '../../../lib/rng';
+
 export type Player = 1 | 2;
 export type Size = 3 | 4 | 5;
 export const SIZES: readonly Size[] = [3, 4, 5];
@@ -136,4 +138,69 @@ export function winner(s: State): Player | 'tie' | null {
   if (!isOver(s)) return null;
   const sc = score(s);
   return sc[1] > sc[2] ? 1 : sc[2] > sc[1] ? 2 : 'tie';
+}
+
+// ---- computer opponent ------------------------------------------------------
+
+export type Level = 'easy' | 'hard';
+
+/** Open edges that complete at least one box right now. */
+export function capturingEdges(s: State): Edge[] {
+  return legalMoves(s).filter((e) => boxesTouching(s.size, e).some(([r, c]) => !s.boxes[r][c] && sidesDrawn(s, r, c) === 3));
+}
+
+/** Does drawing `e` leave a box with exactly three sides (a box handed to the opponent)? */
+export function givesThirdSide(s: State, e: Edge): boolean {
+  return boxesTouching(s.size, e).some(([r, c]) => sidesDrawn(s, r, c) === 2);
+}
+
+/** Open edges that neither complete a box nor give away a third side. */
+export function safeEdges(s: State): Edge[] {
+  const capture = capturingEdges(s);
+  return legalMoves(s).filter((e) => !givesThirdSide(s, e) && !capture.some((x) => sameEdge(x, e)));
+}
+
+/**
+ * Boxes the opponent can take, one after another, after we draw `e`
+ * (used when nothing can be captured, so `e` itself completes no box). This is the length of the chain or loop the move
+ * opens up — the opponent is assumed to take everything on offer.
+ */
+export function boxesGivenAway(s: State, e: Edge): number {
+  const res = applyMove(s, e);
+  if (!res) return 0;
+  let t = res.state;
+  let taken = 0;
+  for (;;) {
+    const cap = capturingEdges(t);
+    if (!cap.length) return taken;
+    const r = applyMove(t, cap[0])!;
+    taken += r.completed.length;
+    t = r.state;
+  }
+}
+
+/**
+ * The computer's line for whoever is to play, or null once the game is over.
+ * Hard: take any box on offer; otherwise draw a line that gives nothing away;
+ * when every line gives something away, open the shortest chain.
+ * Easy: takes a box about 70% of the time it can; otherwise any line.
+ */
+export function chooseEdge(s: State, level: Level, rng: Rng): Edge | null {
+  const legal = legalMoves(s);
+  if (!legal.length) return null;
+  const capture = capturingEdges(s);
+  if (level === 'easy') return capture.length && rng.chance(0.7) ? rng.pick(capture) : rng.pick(legal);
+  if (capture.length) return rng.pick(capture);
+  const safe = legal.filter((e) => !givesThirdSide(s, e));
+  if (safe.length) return rng.pick(safe);
+  let best = Infinity;
+  let picks: Edge[] = [];
+  for (const e of legal) {
+    const n = boxesGivenAway(s, e);
+    if (n < best) {
+      best = n;
+      picks = [e];
+    } else if (n === best) picks.push(e);
+  }
+  return rng.pick(picks);
 }

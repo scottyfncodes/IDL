@@ -1,7 +1,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import Battleship from './Battleship';
-import { load } from '../../../lib/storage';
-import type { Game } from './logic';
+import { load, save } from '../../../lib/storage';
+import { createRng } from '../../../lib/rng';
+import { loadRoomStats } from '../../../room/stats';
+import { CELLS, cellsFor, confirmFleet, fire, newGame, randomFleet, setFleet, type Game } from './logic';
 
 const click = (name: RegExp | string) => fireEvent.click(screen.getByRole('button', { name }));
 const noSecrets = (container: HTMLElement) => {
@@ -112,5 +114,36 @@ describe('Battleship screen', () => {
     fireEvent.click(screen.getByRole('gridcell', { name: /^A1:/ })); // schooner down A1–A4
     fireEvent.click(screen.getByRole('gridcell', { name: /^A5:/ })); // ferry down A5–A7
     expect(container.querySelectorAll('.bs-hull')).toHaveLength(2);
+  });
+
+  it('records a finished game exactly once, even after a re-render and a remount', () => {
+    // Both fleets placed; player 1 has hit everything but one square, player 2 only missed.
+    let g = newGame(0);
+    g = confirmFleet(setFleet(g, randomFleet(createRng('bs-a'))));
+    g = confirmFleet(setFleet(g, randomFleet(createRng('bs-b'))));
+    const targets = g.fleets[1].flatMap((p) => cellsFor(p)!);
+    const mine = new Set(g.fleets[0].flatMap((p) => cellsFor(p)!));
+    const misses = Array.from({ length: CELLS }, (_, i) => i).filter((i) => !mine.has(i));
+    for (let k = 0; k < targets.length - 1; k++) {
+      g = fire(g, targets[k]).game;
+      g = fire(g, misses[k]).game;
+    }
+    save('room:battleship', { game: g, score: [0, 0] }, 1);
+    const last = targets[targets.length - 1];
+    const name = `${'ABCDEFG'[last % 7]}${Math.floor(last / 7) + 1}`;
+
+    const { rerender, unmount } = render(<Battleship />);
+    click(/I'm Player 1 — show my board/);
+    fireEvent.click(screen.getByRole('gridcell', { name: new RegExp(`^${name}:`) }));
+    expect(screen.getByRole('heading', { name: 'Player 1 wins' })).toBeTruthy();
+    expect(loadRoomStats('battleship')).toMatchObject({ played: 1, vsFriend: 1 });
+    rerender(<Battleship />);
+    unmount();
+    render(<Battleship />);
+    expect(screen.getByRole('heading', { name: 'Player 1 wins' })).toBeTruthy();
+    expect(loadRoomStats('battleship').played).toBe(1);
+    // A rematch clears the guard for the next game.
+    click('Rematch');
+    expect(load<{ recorded?: boolean } | null>('room:battleship', null, 1)!.recorded).toBeFalsy();
   });
 });

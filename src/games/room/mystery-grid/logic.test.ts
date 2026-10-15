@@ -1,5 +1,6 @@
 import { THEMES } from './content';
 import {
+  solveScore,
   ALL_ASSIGNS,
   CROSS,
   DOT,
@@ -266,5 +267,14 @@ describe('hints', () => {
     const h = hint(p, marks);
     expect(h.kind).toBe('cell');
     if (h.kind === 'cell') expect(h.clues).toEqual([]);
+  });
+});
+
+describe('mystery grid: personal-best score', () => {
+  it('counts hints and wrong checks, lower is better', () => {
+    expect(solveScore('gentle', 0, 1)).toEqual({ variant: 'gentle', value: 0, better: 'lower', label: 'No hints' });
+    expect(solveScore('tricky', 1, 1)).toMatchObject({ variant: 'tricky', value: 1, label: '1 hint' });
+    expect(solveScore('gentle', 2, 3)).toMatchObject({ value: 4, label: '2 hints · 2 wrong checks' });
+    expect(solveScore('gentle', 0, 2)).toMatchObject({ value: 1, label: 'No hints · 1 wrong check' });
   });
 });

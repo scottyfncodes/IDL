@@ -25,3 +25,5 @@
 .ttt-mark { width: 18px; height: 18px; fill: none; stroke-width: 4.5; stroke-linecap: round; }
 .ttt-mark--x { stroke: var(--clay); }
 .ttt-mark--o { stroke: var(--tide); }
+.ttt-top { display: grid; gap: var(--s-3); justify-items: center; }
+.ttt-board.is-waiting .ttt-cell:disabled { cursor: progress; }
