@@ -66,6 +66,12 @@ export default function MemoryMatch() {
 
   const [pendingChange, setPendingChange] = useState<null | { mode: Mode; size: SizeId }>(null);
   const [note, setNote] = useState('');
+  // After the last pair, the result sits over the board; "View board" lifts it.
+  const [viewingBoard, setViewingBoard] = useState(false);
+  const playAgainRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (over && !viewingBoard) playAgainRef.current?.focus({ preventScroll: true });
+  }, [over, viewingBoard]);
   const [, setTick] = useState(0);
   const segStart = useRef<number | null>(null);
 
@@ -140,6 +146,7 @@ export default function MemoryMatch() {
 
   const start = (m: Mode, z: SizeId) => {
     segStart.current = null;
+    setViewingBoard(false);
     setNote('');
     setStored({ ...saved, match: newMatch(m, z, freshSeed()), elapsedMs: 0, newBest: false });
   };
@@ -212,8 +219,16 @@ export default function MemoryMatch() {
         </div>
       )}
 
-      <p className="status-line" aria-live="polite">{status}</p>
+      {over && viewingBoard ? (
+        <div className="button-row mm-after">
+          <Button variant="primary" size="sm" onClick={() => start(mode, size)}>Play again</Button>
+          <Button variant="quiet" size="sm" onClick={() => setViewingBoard(false)}>Show result</Button>
+        </div>
+      ) : (
+        <p className="status-line" aria-live="polite">{status}</p>
+      )}
 
+      <div className="mm-stage">
       <div className={`mm-board${over ? ' is-over' : ''}`} style={boardStyle} role="group" aria-label={`${spec.label} cards`}>
         {match.deck.map((motif, i) => {
           const by = match.matchedBy[i];
@@ -249,8 +264,9 @@ export default function MemoryMatch() {
         })}
       </div>
 
-      {over && (
-        <div className="end-card">
+      {over && !viewingBoard && (
+        <div className="mm-result">
+        <div className="end-card" role="region" aria-label="Result">
           {mode === 'solo' ? (
             <>
               <p className="eyebrow">{saved.newBest ? 'New best' : 'Board cleared'}</p>
@@ -271,10 +287,13 @@ export default function MemoryMatch() {
             </>
           )}
           <div className="end-card__actions">
-            <Button variant="primary" size="lg" onClick={() => start(mode, size)}>Play again</Button>
+            <Button ref={playAgainRef} variant="primary" size="lg" onClick={() => start(mode, size)}>Play again</Button>
+            <Button variant="quiet" onClick={() => setViewingBoard(true)}>View board</Button>
           </div>
         </div>
+        </div>
       )}
+      </div>
 
       <Confirm
         open={pendingChange !== null}

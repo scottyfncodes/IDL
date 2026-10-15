@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { usePersistentState } from '../../../lib/storage';
 import { freshSeed } from '../../../lib/rng';
 import { GameScreen } from '../../../ui/GameScreen';
 import { Button } from '../../../ui/Button';
 import { Confirm } from '../../../ui/Confirm';
 import { Segmented } from '../../../ui/Segmented';
+import { useToast } from '../../../ui/Toast';
 import { IconEraser, IconPause, IconPencil, IconPlay, IconUndo } from '../../../ui/icons';
 import {
   DIFFICULTIES,
@@ -28,6 +29,7 @@ import {
   type Grid,
   type MoveResult,
 } from './logic';
+import { cellFromPoint } from './touch';
 import './styles.css';
 
 interface Game {
@@ -77,6 +79,12 @@ export default function Sudoku() {
   const [generating, setGenerating] = useState<Difficulty | null>(null);
   const [confirm, setConfirm] = useState<null | 'new' | 'restart'>(null);
   const [shake, setShake] = useState<number | null>(null);
+  const toast = useToast();
+  const boardRef = useRef<HTMLDivElement>(null);
+  // Touch: select the cell under the finger and follow it while it slides,
+  // so a near-miss can be corrected before lifting. Taps on grid lines still
+  // land on the nearest square. The synthetic click that follows is ignored.
+  const touch = useRef<{ id: number; suppressUntil: number } | null>(null);
   const { game, selected, notesMode, paused } = state;
   const playing = !!game && !game.won;
 
@@ -147,7 +155,11 @@ export default function Sudoku() {
 
   const input = useCallback(
     (d: number) => {
-      if (selected === null || !game) return;
+      if (!game) return;
+      if (selected === null) {
+        toast.show('Tap a square first');
+        return;
+      }
       if (game.givens[selected]) {
         setShake(selected);
         return;
@@ -160,7 +172,7 @@ export default function Sudoku() {
         apply((b) => toggleNote(b, selected, d));
       } else apply((b, g) => placeDigit(b, selected, d, g.solution));
     },
-    [apply, game, notesMode, selected],
+    [apply, game, notesMode, selected, toast],
   );
 
   const erase = useCallback(() => {
@@ -178,7 +190,31 @@ export default function Sudoku() {
     });
   }, [setState]);
 
-  const select = useCallback((i: number | null) => setState((s) => ({ ...s, selected: i })), [setState]);
+  const select = useCallback((i: number | null) => setState((s) => (s.selected === i ? s : { ...s, selected: i })), [setState]);
+
+  const selectAt = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const el = boardRef.current;
+    if (!el) return;
+    const i = cellFromPoint(el.getBoundingClientRect(), e.clientX, e.clientY);
+    if (i !== null) select(i);
+  };
+  const onBoardPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse' || !game || game.won || paused) return;
+    touch.current = { id: e.pointerId, suppressUntil: 0 };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    selectAt(e);
+  };
+  const onBoardPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (touch.current?.id === e.pointerId) selectAt(e);
+  };
+  const onBoardPointerEnd = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (touch.current?.id !== e.pointerId) return;
+    touch.current = { id: -1, suppressUntil: Date.now() + 500 };
+  };
+  const onCellClick = (i: number) => {
+    if (touch.current && Date.now() < touch.current.suppressUntil) return;
+    select(i);
+  };
   const toggleNotes = useCallback(() => setState((s) => ({ ...s, notesMode: !s.notesMode })), [setState]);
   const setPaused = useCallback((p: boolean) => setState((s) => ({ ...s, paused: p })), [setState]);
 
@@ -241,6 +277,7 @@ export default function Sudoku() {
   // ---- derived ------------------------------------------------------------
   const done = game ? completedDigits(game.values, game.solution) : new Set<number>();
   const selDigit = game && selected !== null ? game.values[selected] : 0;
+  const remaining = [1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (game ? 9 - game.values.filter((v, i) => v === d && game.solution[i] === d).length : 9));
   const inProgress = !!game && !game.won && game.values.some((v, i) => v !== game.givens[i] || game.notes[i]);
 
   const rules = (
@@ -313,7 +350,17 @@ export default function Sudoku() {
           </div>
 
           <div className="sdk-board-wrap">
-            <div className={`sdk-board no-select${paused && !game.won ? ' is-paused' : ''}${game.won ? ' is-won' : ''}`} role="group" aria-label="Sudoku board" aria-hidden={paused && !game.won ? true : undefined}>
+            <div
+              ref={boardRef}
+              className={`sdk-board no-select${paused && !game.won ? ' is-paused' : ''}${game.won ? ' is-won' : ''}`}
+              role="group"
+              aria-label="Sudoku board"
+              aria-hidden={paused && !game.won ? true : undefined}
+              onPointerDown={onBoardPointerDown}
+              onPointerMove={onBoardPointerMove}
+              onPointerUp={onBoardPointerEnd}
+              onPointerCancel={onBoardPointerEnd}
+            >
               {UNITS.slice(18).map((box, b) => (
                 <div className="sdk-box" key={b}>
                   {box.map((i) => {
@@ -336,7 +383,7 @@ export default function Sudoku() {
                         aria-label={label}
                         aria-pressed={sel}
                         disabled={game.won || paused}
-                        onClick={() => select(sel ? null : i)}
+                        onClick={() => onCellClick(i)}
                       >
                         {v ? (
                           <span className="sdk-digit" key={v}>{v}</span>
@@ -362,7 +409,7 @@ export default function Sudoku() {
             )}
           </div>
 
-          <p className="status-line sdk-status" aria-live="polite">{status}</p>
+          <p className="visually-hidden" aria-live="polite">{status}</p>
 
           {game.won ? (
             <div className="end-card">
@@ -379,36 +426,36 @@ export default function Sudoku() {
               </div>
             </div>
           ) : (
-            <div className="sdk-controls" aria-hidden={paused ? true : undefined}>
-              <div className="sdk-tools">
-                <button type="button" className="sdk-tool" onClick={undo} disabled={paused || game.history.length === 0}>
-                  <IconUndo size={20} />
-                  <span>Undo</span>
-                </button>
-                <button type="button" className="sdk-tool" onClick={erase} disabled={paused || selected === null || !!game.givens[selected] || (!game.values[selected] && !game.notes[selected])}>
-                  <IconEraser size={20} />
-                  <span>Erase</span>
-                </button>
-                <button type="button" className="sdk-tool" aria-pressed={notesMode} onClick={toggleNotes} disabled={paused}>
-                  <IconPencil size={20} />
-                  <span>Notes</span>
-                  <span className="sdk-tool__badge">{notesMode ? 'On' : 'Off'}</span>
-                </button>
-              </div>
-              <div className={`sdk-pad${notesMode ? ' is-notes' : ''}`} role="group" aria-label={notesMode ? 'Pencil a note' : 'Place a number'}>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => (
+            <div className={`sdk-keys${notesMode ? ' is-notes' : ''}`} role="group" aria-label={notesMode ? 'Pencil a note' : 'Place a number'} aria-hidden={paused ? true : undefined}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => {
+                const left = remaining[d - 1];
+                return (
                   <button
                     key={d}
                     type="button"
                     className={`sdk-key${done.has(d) ? ' is-done' : ''}`}
-                    aria-label={done.has(d) ? `${d}, all placed` : String(d)}
-                    disabled={paused || selected === null}
+                    style={{ gridArea: `d${d}` }}
+                    aria-label={done.has(d) ? `${d}, all placed` : `${d}, ${left} left`}
+                    disabled={paused}
                     onClick={() => input(d)}
                   >
-                    {d}
+                    <span className="sdk-key__digit">{d}</span>
+                    {!notesMode && left > 0 && <span className="sdk-key__left" aria-hidden="true">{left}</span>}
                   </button>
-                ))}
-              </div>
+                );
+              })}
+              <button type="button" className="sdk-tool" style={{ gridArea: 'erase' }} onClick={erase} disabled={paused || selected === null || !!game.givens[selected] || (!game.values[selected] && !game.notes[selected])}>
+                <IconEraser size={20} />
+                <span>Erase</span>
+              </button>
+              <button type="button" className="sdk-tool" style={{ gridArea: 'undo' }} onClick={undo} disabled={paused || game.history.length === 0}>
+                <IconUndo size={20} />
+                <span>Undo</span>
+              </button>
+              <button type="button" className="sdk-tool" style={{ gridArea: 'notes' }} aria-pressed={notesMode} onClick={toggleNotes} disabled={paused}>
+                <IconPencil size={20} />
+                <span>{notesMode ? 'Notes on' : 'Notes off'}</span>
+              </button>
             </div>
           )}
         </>

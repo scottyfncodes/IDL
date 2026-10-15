@@ -1,4 +1,5 @@
-.bs-body { gap: var(--s-4); }
+.bs-body { gap: var(--s-3); }
+.game-body.bs-body { padding-top: var(--s-4); padding-bottom: calc(var(--s-5) + var(--safe-bottom)); }
 
 .bs-pmark { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .player-chip--p1 .bs-pmark path { fill: color-mix(in srgb, currentColor 25%, transparent); }
@@ -107,13 +108,23 @@ button.bs-cell:disabled { cursor: default; }
 .bs-handoff .btn { white-space: normal; text-align: center; }
 
 /* ---------- Setup ---------- */
-.bs-dock { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--s-2); }
+.bs-setup-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+.bs-setup-head .btn { min-height: var(--tap); }
+/* Two lines reserved so the board doesn't jump as hints change length. */
+.bs-setup-status { min-height: 2.9em; line-height: 1.45; margin: calc(var(--s-1) * -1) 0; }
+
+/* One row of five compact boats: pips above the name. */
+.bs-dock { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
 .bs-dock__ship {
-  display: inline-flex;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--s-2);
-  min-height: var(--tap);
-  padding: 0 10px;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  min-height: 54px;
+  padding: 6px 2px;
   border-radius: var(--r-md);
   border: 1.5px solid var(--line-strong);
   background: var(--card);
@@ -124,7 +135,13 @@ button.bs-cell:disabled { cursor: default; }
 }
 .bs-dock__ship.is-selected { border-color: var(--ink); background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--ink); }
 .bs-dock__ship.is-placed { color: var(--ink-3); border-style: dashed; background: transparent; }
-.bs-dock__check { color: var(--moss); margin-left: -2px; }
+.bs-dock__name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-xs); }
+.bs-dock__check { position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; color: var(--moss); }
+.bs-dock .bs-pips span { width: 6px; height: 6px; }
+
+.bs-setup-actions { display: flex; gap: var(--s-2); align-items: center; }
+.bs-setup-actions .btn { min-height: var(--tap); }
+.bs-setup-actions .bs-ready { flex: 1; min-height: 48px; }
 
 .bs-pips { display: inline-flex; gap: 2px; }
 .bs-pips span { width: 7px; height: 7px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 62%, var(--card)); }

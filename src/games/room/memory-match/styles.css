@@ -98,3 +98,25 @@
 .mm-badge .mm-pmark, .mm-badge svg { width: 70%; height: 70%; fill: #fff; stroke: #fff; }
 .mm-badge--p1 { background: var(--clay); }
 .mm-badge--p2 { background: var(--tide); border-radius: 4px; }
+
+/* ---------- Finished ----------
+ * The result sits over the cleared board so "Play again" is on screen without
+ * scrolling. "View board" lifts it to admire the pairs. */
+.mm-stage { position: relative; display: grid; }
+.mm-result {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: var(--s-3);
+  background: color-mix(in srgb, var(--paper) 62%, transparent);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  border-radius: var(--r-lg);
+  animation: idl-fade 220ms ease both;
+}
+.mm-result .end-card { width: min(100%, 360px); box-shadow: var(--shadow-2); gap: var(--s-3); padding: var(--s-5) var(--s-4); }
+.mm-result .end-card__title { font-size: var(--fs-xl); }
+.mm-result .end-card__actions { flex-direction: column; align-items: stretch; gap: var(--s-2); width: 100%; max-width: 240px; }
+.mm-after { min-height: 32px; }

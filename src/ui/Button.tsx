@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
 type Variant = 'primary' | 'secondary' | 'quiet' | 'danger';
 type Size = 'md' | 'lg' | 'sm';
@@ -10,9 +10,13 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   block?: boolean;
 }
 
-export function Button({ variant = 'secondary', size = 'md', icon, block, className = '', children, type = 'button', ...rest }: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = 'secondary', size = 'md', icon, block, className = '', children, type = 'button', ...rest },
+  ref,
+) {
   return (
     <button
+      ref={ref}
       type={type}
       className={`btn btn--${variant} btn--${size}${block ? ' btn--block' : ''} ${className}`.trim()}
       {...rest}
@@ -21,7 +25,7 @@ export function Button({ variant = 'secondary', size = 'md', icon, block, classN
       {children != null && <span>{children}</span>}
     </button>
   );
-}
+});
 
 export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
