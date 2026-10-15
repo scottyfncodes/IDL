@@ -49,7 +49,7 @@ const FAMILIES: [family: string, pattern: RegExp][] = [
 ];
 
 export function familiesOf(label: string): string[] {
-  if (label.includes('___') || /\bhidden\b|\bsound(s)? like\b|\banagram|\brhymes?\b|\bpalindrome/i.test(label)) return [];
+  if (label.includes('___') || /\bhidden\b|\bsound(s)? like\b|\banagram|\brhymes?\b|\bpalindrome|\bletters?\b|\badd\b|\breversed\b/i.test(label)) return [];
   return FAMILIES.filter(([, re]) => re.test(label)).map(([f]) => f);
 }
 
