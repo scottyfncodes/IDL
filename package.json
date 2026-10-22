@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "idl — a pocket of play for the time in between. By HaveAnApp.",
+  "description": "idl: a pocket of play for the time in between. By HaveAnApp.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",
-    "@fontsource-variable/inter-tight": "^5.3.0",
+    "@fontsource-variable/schibsted-grotesk": "^5.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

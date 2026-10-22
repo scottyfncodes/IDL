@@ -209,10 +209,6 @@
 .collection__name { font-size: var(--fs-lg); font-weight: 600; line-height: 1.2; }
 .collection__line { color: var(--ink-2); font-size: var(--fs-sm); }
 .collection__count { margin-top: auto; font-size: var(--fs-xs); color: var(--ink-3); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-.collections > li:nth-child(1) .collection { border-top: 4px solid var(--ochre); }
-.collections > li:nth-child(2) .collection { border-top: 4px solid var(--clay); }
-.collections > li:nth-child(3) .collection { border-top: 4px solid var(--moss); }
-.collections > li:nth-child(4) .collection { border-top: 4px solid var(--tide); }
 
 .chips { display: flex; gap: var(--s-2); flex-wrap: wrap; }
 .chip {

@@ -177,7 +177,7 @@ export default function ConnectFour() {
       className="c4-screen"
       rules={
         <>
-          <p>Take turns dropping a disc into a column. It falls to the lowest open slot. Line up four of yours — across, down or diagonally — to win the round.</p>
+          <p>Take turns dropping a disc into a column. It falls to the lowest open slot. Line up four of yours (across, down or diagonally) to win the round.</p>
           <ul>
             <li><strong>Player 1</strong> plays discs marked ✕, <strong>Player 2</strong> discs marked with a ring.</li>
             <li>Tap anywhere in a column to drop. On a keyboard, use ← → and Enter.</li>

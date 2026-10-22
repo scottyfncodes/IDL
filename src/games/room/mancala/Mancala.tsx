@@ -184,7 +184,7 @@ export default function Mancala() {
   let status: string;
   if (anim) status = `${name(note?.by ?? game.turn)} ${vsComputer && note?.by === 1 ? 'sow' : 'sows'} ${anim.path.length} seed${anim.path.length === 1 ? '' : 's'}…`;
   else if (over) status = winner === 0 ? `A draw, ${sc[1]}–${sc[2]}` : `${name(winner as Player)} ${vsComputer && winner === 1 ? 'win' : 'wins'}, ${Math.max(sc[1], sc[2])}–${Math.min(sc[1], sc[2])}`;
-  else if (note?.extra) status = vsComputer ? (note.by === 1 ? 'Last seed in your store — go again.' : `Extra turn for ${COMPUTER_NAME}. Thinking…`) : `Last seed in the store — Player ${note.by} goes again.`;
+  else if (note?.extra) status = vsComputer ? (note.by === 1 ? 'Last seed in your store. Go again.' : `Extra turn for ${COMPUTER_NAME}. Thinking…`) : `Last seed in the store. Player ${note.by} goes again.`;
   else if (note && note.captured > 0) {
     const who = vsComputer && note.by === 1 ? 'You capture' : `${name(note.by)} captures`;
     status = `${who} ${note.captured + 1} seeds. ${turnText(game.turn)}`;

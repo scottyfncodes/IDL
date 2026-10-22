@@ -58,7 +58,7 @@ export const THEMES: Theme[] = [
   {
     id: 'supper',
     title: 'Supper Club',
-    intro: 'Four friends sit along one side of a long table — seats 1 to 4, left to right — each having brought a dish.',
+    intro: 'Four friends sit along one side of a long table (seats 1 to 4, left to right), each having brought a dish.',
     categories: [
       people('Guest', ['Wren', 'Tobias', 'Amara', 'Lio']),
       { name: 'Dish', items: ['onion tart', 'lentil soup', 'plum cake', 'flatbread'], subject: 'whoever brought the {}', verb: 'brought', negVerb: 'didn’t bring', obj: 'the {}' },

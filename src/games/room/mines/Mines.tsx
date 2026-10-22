@@ -296,7 +296,7 @@ export default function Mines() {
       <p>Uncover every square that isn’t a mine. Each number tells you how many mines touch that square, diagonals included.</p>
       <ul>
         <li>Your first tap is always safe and opens up a patch of the field.</li>
-        <li>Tap to uncover. Switch to <strong>Flag</strong> at the bottom — or press and hold a square — to mark a mine.</li>
+        <li>Tap to uncover. Switch to <strong>Flag</strong> at the bottom (or press and hold a square) to mark a mine.</li>
         <li>Tap a number whose mines are all flagged to clear the rest of its neighbours at once.</li>
         <li><strong>No guessing needed</strong> (on by default) deals fields you can always clear by logic alone.</li>
         <li>On a computer: left click uncovers, right click flags. Arrow keys move, Space or Enter uncovers, F flags.</li>
@@ -430,7 +430,7 @@ export default function Mines() {
         </div>
       ) : (
         <div className="mn-dock">
-          {game.generation === 'fallback' && <p className="meta mn-dock__note">No guess-free layout found in time — this one may need a guess.</p>}
+          {game.generation === 'fallback' && <p className="meta mn-dock__note">No guess-free layout found in time, so this one may need a guess.</p>}
           <div className="mn-mode" role="group" aria-label="Tap action">
             <button type="button" className="mn-mode__opt" aria-pressed={!flagMode} onClick={() => flagMode && toggleMode()}>
               <DigGlyph />

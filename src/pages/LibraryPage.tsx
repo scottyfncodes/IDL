@@ -142,8 +142,8 @@ function Preferences() {
       <div className="pref-note">
         <h3>Your data stays on this device</h3>
         <p className="muted">
-          idl has no accounts and sends nothing anywhere. Progress lives in this browser’s storage. Clearing website data — or, on
-          iPhone, long periods without opening idl — can remove it. Adding idl to your Home Screen keeps it safest.
+          idl has no accounts and sends nothing anywhere. Progress lives in this browser’s storage. Clearing website data (or, on
+          iPhone, long periods without opening idl) can remove it. Adding idl to your Home Screen keeps it safest.
         </p>
       </div>
       <div className="button-row button-row--start">

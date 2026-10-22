@@ -13,14 +13,14 @@ const noSecrets = (container: HTMLElement) => {
 };
 
 function setUpBothFleets(container: HTMLElement) {
-  click(/I'm Player 1 — place my fleet/);
+  click(/I'm Player 1: place my fleet/);
   expect((screen.getByRole('button', { name: 'Ready' }) as HTMLButtonElement).disabled).toBe(true);
   click(/Random fleet/);
   expect(container.querySelectorAll('.bs-hull')).toHaveLength(5);
   click('Ready');
   expect(screen.getByText('Pass the phone to Player 2')).toBeTruthy();
   noSecrets(container);
-  click(/I'm Player 2 — place my fleet/);
+  click(/I'm Player 2: place my fleet/);
   expect(container.querySelectorAll('.bs-hull')).toHaveLength(0); // P2 starts with an empty board
   click(/Random fleet/);
   click('Ready');
@@ -31,7 +31,7 @@ function setUpBothFleets(container: HTMLElement) {
 describe('Battleship screen', () => {
   it('keeps every setup control in a compact layout: rotate up top, one dock row, actions with Ready', () => {
     const { container } = render(<Battleship />);
-    click(/I'm Player 1 — place my fleet/);
+    click(/I'm Player 1: place my fleet/);
     const head = container.querySelector('.bs-setup-head')!;
     expect(head.querySelector('.player-chip')).toBeTruthy();
     const rotate = screen.getByRole('button', { name: /^Rotate\. Boats currently go across/ });
@@ -49,7 +49,7 @@ describe('Battleship screen', () => {
     noSecrets(container);
     setUpBothFleets(container);
 
-    click(/I'm Player 1 — show my board/);
+    click(/I'm Player 1: show my board/);
     // Own fleet only (5 hulls on the small board); the target board has none.
     expect(container.querySelectorAll('.bs-hull')).toHaveLength(5);
     const target = screen.getByRole('grid');
@@ -71,7 +71,7 @@ describe('Battleship screen', () => {
   it('resumes on a handoff screen after a reload mid-turn', () => {
     const first = render(<Battleship />);
     setUpBothFleets(first.container);
-    click(/I'm Player 1 — show my board/);
+    click(/I'm Player 1: show my board/);
     expect(screen.getByRole('grid')).toBeTruthy();
     first.unmount();
 
@@ -82,18 +82,18 @@ describe('Battleship screen', () => {
 
   it('resumes setup behind a handoff too', () => {
     const first = render(<Battleship />);
-    click(/I'm Player 1 — place my fleet/);
+    click(/I'm Player 1: place my fleet/);
     click(/Random fleet/);
     first.unmount();
     const { container } = render(<Battleship />);
     noSecrets(container);
-    click(/I'm Player 1 — place my fleet/);
+    click(/I'm Player 1: place my fleet/);
     expect(container.querySelectorAll('.bs-hull')).toHaveLength(5); // draft fleet kept
   });
 
   it('places, rejects an out-of-bounds spot, and picks a boat back up', () => {
     const { container } = render(<Battleship />);
-    click(/I'm Player 1 — place my fleet/);
+    click(/I'm Player 1: place my fleet/);
     // Schooner (4) is selected, across: G1 doesn't fit.
     act(() => {
       fireEvent.click(screen.getByRole('gridcell', { name: /^G1:/ }));
@@ -133,7 +133,7 @@ describe('Battleship screen', () => {
     const name = `${'ABCDEFG'[last % 7]}${Math.floor(last / 7) + 1}`;
 
     const { rerender, unmount } = render(<Battleship />);
-    click(/I'm Player 1 — show my board/);
+    click(/I'm Player 1: show my board/);
     fireEvent.click(screen.getByRole('gridcell', { name: new RegExp(`^${name}:`) }));
     expect(screen.getByRole('heading', { name: 'Player 1 wins' })).toBeTruthy();
     expect(loadRoomStats('battleship')).toMatchObject({ played: 1, vsFriend: 1 });

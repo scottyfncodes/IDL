@@ -21,19 +21,6 @@ body {
   overflow-x: hidden;
 }
 
-/* A faint paper grain gives surfaces a printed feel without an image request. */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
-  background-image: radial-gradient(rgba(120, 100, 60, 0.05) 1px, transparent 1px);
-  background-size: 3px 3px;
-}
-:root[data-theme='dark'] body::before { opacity: 0.25; }
-
 #root { position: relative; z-index: 1; }
 
 h1, h2, h3, h4 { margin: 0; font-weight: 600; }

@@ -154,10 +154,10 @@ export default function Reversi() {
 
   let status: string;
   if (over) status = winner === 0 ? `A draw, ${n[1]}–${n[2]}` : `${name(winner as Player)} ${vsComputer && winner === 1 ? 'win' : 'wins'}, ${Math.max(n[1], n[2])}–${Math.min(n[1], n[2])}`;
-  else if (computerTurn) status = game.passed === 1 ? `No moves — you pass. ${COMPUTER_NAME} is thinking…` : `${COMPUTER_NAME} is thinking…`;
+  else if (computerTurn) status = game.passed === 1 ? `No moves, you pass. ${COMPUTER_NAME} is thinking…` : `${COMPUTER_NAME} is thinking…`;
   else if (game.passed) {
     const passer = vsComputer ? (game.passed === 1 ? 'you pass' : `${COMPUTER_NAME} passes`) : `Player ${game.passed} passes`;
-    status = `No moves — ${passer}. ${vsComputer ? 'Your move again' : `Player ${game.turn} again`}.`;
+    status = `No moves: ${passer}. ${vsComputer ? 'Your move again' : `Player ${game.turn} again`}.`;
   } else status = vsComputer ? 'Your move' : `Player ${game.turn} to move`;
 
   let endTitle = '';
@@ -171,7 +171,7 @@ export default function Reversi() {
     const c = game.board[i];
     const base = squareName(i).toUpperCase();
     if (c) return `${base}: ${name(c)}${c === 1 ? ', solid disc' : ', outlined disc'}${game.last === i ? ', last move' : ''}`;
-    return `${base}: empty${legal.has(i) ? `, can play — flips ${flipsFor(game.board, i, game.turn).length}` : ''}`;
+    return `${base}: empty${legal.has(i) ? `, can play, flips ${flipsFor(game.board, i, game.turn).length}` : ''}`;
   };
 
   return (

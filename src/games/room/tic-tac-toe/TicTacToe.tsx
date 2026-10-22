@@ -123,7 +123,7 @@ export default function TicTacToe() {
       backTo="/play"
       rules={
         <>
-          <p>Take turns placing your mark. Get three in a row — across, down or diagonally — to win the round.</p>
+          <p>Take turns placing your mark. Get three in a row (across, down or diagonally) to win the round.</p>
           <ul>
             <li><strong>Player 1</strong> plays ✕, <strong>Player 2</strong> plays ◯.</li>
             <li>A full board with no line is a draw.</li>

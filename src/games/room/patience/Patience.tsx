@@ -577,9 +577,9 @@ export default function Patience() {
     <>
       <p>Bring all fifty-two cards home to the four foundations, building each suit up from ace to king.</p>
       <ul>
-        <li>In the seven columns, build down in alternating colours — a red six on a black seven. Move any face-up run as one.</li>
+        <li>In the seven columns, build down in alternating colours: a red six on a black seven. Move any face-up run as one.</li>
         <li>Only a king, or a run headed by one, can fill an empty column. Face-down cards turn over when they’re uncovered.</li>
-        <li>Tap the stock to turn {draw === 1 ? 'one card' : 'three cards'}. When it runs out, tap again to turn the waste over — as often as you like.</li>
+        <li>Tap the stock to turn {draw === 1 ? 'one card' : 'three cards'}. When it runs out, tap again to turn the waste over, as often as you like.</li>
         <li><strong>Tap a card</strong> to send it to its best spot; tap again to try the next spot. <strong>Drag</strong> for a precise move, or <strong>press and hold</strong> to pick a card up, then tap where it goes.</li>
         <li>With <strong>winnable deals</strong> on, idl solves each deal on your phone before dealing it. If none checks out in time, you get an ordinary shuffle and the label says so.</li>
         <li>Keyboard: Tab to a card and press Enter to move it, Space to pick it up and put it down. U undoes, D draws.</li>
@@ -643,7 +643,7 @@ export default function Patience() {
       menu={[
         { label: 'New deal', onSelect: () => requestDeal(state.draw), disabled: dealing },
         { label: draw === 1 ? 'Switch to Draw 3' : 'Switch to Draw 1', onSelect: () => requestDeal(draw === 1 ? 3 : 1), disabled: dealing },
-        { label: state.winnable ? 'Winnable deals: on — turn off' : 'Winnable deals: off — turn on', onSelect: toggleWinnable },
+        { label: state.winnable ? 'Winnable deals: on (turn off)' : 'Winnable deals: off (turn on)', onSelect: toggleWinnable },
       ]}
     >
       {!game || dealing ? (

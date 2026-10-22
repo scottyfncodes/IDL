@@ -115,7 +115,7 @@ export default function Linkup({ date, puzzle, record, save }: DailyGameProps<Li
       shakeTimer.current = window.setTimeout(() => setShaking(false), 400);
       if (st === 'lost') {
         setSelected([]);
-        flash('Out of mistakes — here they are', 2600);
+        flash('Out of mistakes. Here they are', 2600);
       } else flash(outcome.kind === 'one-away' ? 'One away…' : 'Not quite');
     }
     if (st === 'playing') save({ status: 'playing', state: next });
@@ -202,7 +202,7 @@ export function LinkupRules() {
         <li>Tap four words, then <strong>Submit</strong>.</li>
         <li>Three right and one wrong? You’ll see <strong>One away…</strong></li>
         <li>You can make <strong>four mistakes</strong>. Repeating a guess is free.</li>
-        <li>Groups run from straightforward (one pip) to devious (four pips) — the last is often wordplay, like <em>___ cake</em>.</li>
+        <li>Groups run from straightforward (one pip) to devious (four pips). The last is often wordplay, like <em>___ cake</em>.</li>
         <li>Some words fit more than one group. Only one split uses all sixteen.</li>
       </ul>
     </>
@@ -222,7 +222,7 @@ export function LinkupReveal({ puzzle, record }: { puzzle: LinkupPuzzle; record:
             <LevelMarker level={g.level} />
             <span className="lk-reveal__text">
               <strong>{g.label}</strong>
-              <span className="meta"> — {g.words.join(', ')}</span>
+              <span className="meta">: {g.words.join(', ')}</span>
               {!solved.has(i) && <span className="meta"> (missed)</span>}
             </span>
           </li>

@@ -17,7 +17,7 @@ No accounts, no ads, no tracking, no server. Progress is stored on the device.
 
 Vite + React 18 + TypeScript, plain CSS with design tokens, Vitest for unit
 tests and Playwright for browser tests. There are no runtime dependencies
-beyond React and two self-hosted variable fonts (Fraunces, Inter Tight).
+beyond React and two self-hosted variable fonts (Fraunces, Schibsted Grotesk).
 
 ```
 npm install
@@ -97,4 +97,4 @@ assets are immutable). Any static host works with equivalent headers.
 
 All puzzles, clues and copy are original. Word lists are derived from SCOWL
 (© Kevin Atkinson, permissive licence in `LICENSES/SCOWL.txt`). Fonts are
-Fraunces and Inter Tight (SIL Open Font License) via Fontsource.
+Fraunces and Schibsted Grotesk (SIL Open Font License) via Fontsource.

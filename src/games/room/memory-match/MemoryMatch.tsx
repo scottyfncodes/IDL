@@ -135,7 +135,7 @@ export default function MemoryMatch() {
     if (segStart.current === null && mode === 'solo') segStart.current = Date.now();
     let s: Saved = bank({ ...saved, match: next });
     if (next.scores[0] + next.scores[1] > pairsFound(match)) {
-      setNote(mode === 'duo' ? `A pair! ${NAMES[next.turn]} goes again.` : `A pair — ${motifName(next.deck[i])}.`);
+      setNote(mode === 'duo' ? `A pair! ${NAMES[next.turn]} goes again.` : `A pair: ${motifName(next.deck[i])}.`);
     } else if (isPending(next)) {
       setNote(mode === 'duo' ? `Not a pair. Over to ${NAMES[next.turn === 0 ? 1 : 0]}.` : 'Not a pair.');
     } else setNote('');
@@ -190,7 +190,7 @@ export default function MemoryMatch() {
         <>
           <p>All cards start face down. Turn over two at a time to find matching pairs.</p>
           <ul>
-            <li>A pair stays face up. Two different cards turn back over after a moment — tap another card to hurry them along.</li>
+            <li>A pair stays face up. Two different cards turn back over after a moment. Tap another card to hurry them along.</li>
             <li><strong>Solo:</strong> clear the board in as few moves as you can. A move is two cards. Time breaks ties for your best.</li>
             <li><strong>2 players:</strong> take turns. Find a pair and you go again. Most pairs wins.</li>
             <li>Every picture has its own shape, so colour is only a bonus.</li>
@@ -221,7 +221,7 @@ export default function MemoryMatch() {
         <div className="mm-stats" aria-label="Solo progress">
           <span><span className="meta">Moves</span> <strong>{match.moves}</strong></span>
           <span><span className="meta">Time</span> <strong>{formatTime(elapsed)}</strong></span>
-          <span><span className="meta">Best</span> <strong>{best[size] ? `${best[size]!.moves} · ${formatTime(best[size]!.ms)}` : '—'}</strong></span>
+          <span><span className="meta">Best</span> <strong>{best[size] ? `${best[size]!.moves} · ${formatTime(best[size]!.ms)}` : 'None yet'}</strong></span>
         </div>
       ) : (
         <div className="scoreboard">

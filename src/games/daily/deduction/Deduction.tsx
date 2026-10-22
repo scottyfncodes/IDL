@@ -187,7 +187,7 @@ export function DeductionReveal({ puzzle }: { puzzle: Puzzle; record: DailyRecor
   return (
     <div className="dd-reveal">
       <p className="dd-reveal__lead">
-        <strong>{culprit.name}</strong> did it — position {puzzle.culprit + 1}, {describe(culprit)}.
+        <strong>{culprit.name}</strong> did it: position {puzzle.culprit + 1}, {describe(culprit)}.
       </p>
       <ol className="dd-reveal__list">
         {explanation(puzzle).map((e, k) => (
