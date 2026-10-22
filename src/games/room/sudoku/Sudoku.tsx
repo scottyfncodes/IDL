@@ -298,11 +298,11 @@ export default function Sudoku() {
 
   const rules = (
     <>
-      <p>Fill every row, every column and every 3×3 box with the digits 1 to 9 — each exactly once.</p>
+      <p>Fill every row, every column and every 3×3 box with the digits 1 to 9, each exactly once.</p>
       <ul>
         <li>Tap a square, then a number. Digits in dark ink are given and can’t change.</li>
         <li>Turn on <strong>Notes</strong> to pencil in candidates. Placing a digit tidies matching notes nearby.</li>
-        <li>A digit that doesn’t belong is underlined in red and counted as a mistake. There’s no limit — take your time.</li>
+        <li>A digit that doesn’t belong is underlined in red and counted as a mistake. There’s no limit, so take your time.</li>
         <li>Every grid has exactly one solution, so no guessing is ever required.</li>
         <li>On a keyboard: 1–9, arrows, Backspace, N for notes, U to undo, P to pause.</li>
       </ul>
@@ -316,7 +316,7 @@ export default function Sudoku() {
       : paused
         ? 'Paused'
         : notesMode
-          ? 'Notes on — tap numbers to pencil them in'
+          ? 'Notes on: tap numbers to pencil them in'
           : '';
 
   return (

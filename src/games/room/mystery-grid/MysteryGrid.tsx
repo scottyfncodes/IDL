@@ -168,7 +168,7 @@ export default function MysteryGrid() {
       update((g) => ({ ...g, checks: g.checks + 1, won: true, recorded: true, newBest }));
     } else {
       setNote({
-        text: r.wrong === 1 ? 'Close — 1 of the 12 matches isn’t right yet.' : `Not yet — ${r.wrong} of the 12 matches aren’t right.`,
+        text: r.wrong === 1 ? 'Close. 1 of the 12 matches isn’t right yet.' : `Not yet. ${r.wrong} of the 12 matches aren’t right.`,
         tone: 'warn',
       });
       update((g) => ({ ...g, checks: g.checks + 1 }));
@@ -203,7 +203,7 @@ export default function MysteryGrid() {
       <GameScreen title="Mystery Grid" kicker="Solo · logic" backTo="/play" rules={rules} menu={menu}>
         <div className="mg-setup panel anim-rise">
           <p className="mg-setup__title display">A fresh case</p>
-          <p className="muted">Each puzzle is generated on the spot and has exactly one answer — no guessing needed.</p>
+          <p className="muted">Each puzzle is generated on the spot and has exactly one answer, no guessing needed.</p>
           <Segmented label="Difficulty" options={DIFF_OPTIONS} value={state.difficulty} onChange={(d) => setState((s) => ({ ...s, difficulty: d }))} />
           <p className="meta">{state.difficulty === 'gentle' ? 'More direct clues. A good warm-up.' : 'Fewer giveaways, more “not” and “before”.'}</p>
           <Button variant="primary" size="lg" onClick={() => start(state.difficulty)}>Start</Button>

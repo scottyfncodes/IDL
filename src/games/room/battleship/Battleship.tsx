@@ -253,7 +253,7 @@ export default function Battleship() {
       <ul>
         <li>The fleet: Schooner (4), Ferry (3), Trawler (3), Tug (2) and Skiff (2).</li>
         <li>Boats run across or down. They may touch, but never overlap.</li>
-        <li>One shot per turn, hit or miss — then pass the phone.</li>
+        <li>One shot per turn, hit or miss, then pass the phone.</li>
         <li>✕ marks a hit, a dot marks a miss, and a sunk boat is outlined.</li>
         <li>Only look at the phone when it's your turn. The pass screen keeps both fleets hidden.</li>
       </ul>
@@ -289,7 +289,7 @@ export default function Battleship() {
             setView(settingUp ? { kind: 'setup', player: to } : { kind: 'attack', player: to, fired: null });
           }}
         >
-          {`I'm ${NAMES[to]} — ${settingUp ? 'place my fleet' : 'show my board'}`}
+          {`I'm ${NAMES[to]}: ${settingUp ? 'place my fleet' : 'show my board'}`}
         </Button>
         {(score[0] > 0 || score[1] > 0) && (
           <p className="meta">Wins so far · {NAMES[0]} {score[0]} · {NAMES[1]} {score[1]}</p>
@@ -399,7 +399,7 @@ export default function Battleship() {
                 type="button"
                 className={`bs-dock__ship${isSel ? ' is-selected' : ''}${placed ? ' is-placed' : ''}`}
                 aria-pressed={isSel}
-                aria-label={`${s.name}, ${s.length} squares, ${placed ? 'placed — tap to pick up' : isSel ? 'selected' : 'in dock'}`}
+                aria-label={`${s.name}, ${s.length} squares, ${placed ? 'placed, tap to pick up' : isSel ? 'selected' : 'in dock'}`}
                 onClick={() => {
                   setInvalid(null);
                   if (placed) {
@@ -494,7 +494,7 @@ export default function Battleship() {
 
     let headline: string;
     if (!fired) headline = note || `${NAMES[p]}, take your shot.`;
-    else if (fired.outcome.kind === 'hit' && fired.outcome.sunk) headline = `Hit at ${coord(fired.cell)} — you sank their ${specOf(fired.outcome.sunk).name}!`;
+    else if (fired.outcome.kind === 'hit' && fired.outcome.sunk) headline = `Hit at ${coord(fired.cell)}. You sank their ${specOf(fired.outcome.sunk).name}!`;
     else if (fired.outcome.kind === 'hit') headline = `Hit at ${coord(fired.cell)}!`;
     else headline = `Miss at ${coord(fired.cell)}. Open water.`;
 
@@ -532,7 +532,7 @@ export default function Battleship() {
               setView({ kind: 'handoff', to: opp });
             }}
           >
-            {`Done — pass to ${NAMES[opp]}`}
+            {`Done: pass to ${NAMES[opp]}`}
           </Button>
         )}
         <div className="bs-intel">

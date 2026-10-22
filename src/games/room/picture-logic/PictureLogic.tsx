@@ -128,7 +128,7 @@ const RULES = (
     <p>Each number is a run of filled squares in that row or column, in order, with at least one gap between runs. Fill the right squares to reveal a picture.</p>
     <ul>
       <li>Tap to fill. Drag along a row or column to fill a run.</li>
-      <li>Switch to <strong>Cross</strong> — or press and hold — to mark squares you know are empty.</li>
+      <li>Switch to <strong>Cross</strong> (or press and hold) to mark squares you know are empty.</li>
       <li>A clue dims once its line matches. <strong>Check</strong> tells you how many squares are wrong, not where. <strong>Hint</strong> fills a square the clues force.</li>
       <li>Every picture can be solved by logic alone, one line at a time. No guessing.</li>
       <li>On a keyboard: arrows move, Space fills, X crosses, Ctrl+Z undoes.</li>

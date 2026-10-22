@@ -43,7 +43,7 @@ function CompletionPanel({ meta, date, record, module, puzzle }: { meta: DailyGa
   const onShare = async () => {
     if (!record.result) return;
     const outcome = await shareText(buildShareText(meta.name, date, record.result, shareUrl()));
-    if (outcome === 'copied') toast.show('Result copied — no spoilers');
+    if (outcome === 'copied') toast.show('Result copied, no spoilers');
     else if (outcome === 'failed') toast.show('Sharing isn’t available here');
   };
 

@@ -31,7 +31,7 @@
 
   /* Type */
   --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino', Georgia, serif;
-  --font-ui: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-ui: 'Schibsted Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --fs-xs: 0.75rem;   /* 12 */
   --fs-sm: 0.8125rem; /* 13 */
   --fs-md: 0.9375rem; /* 15 */

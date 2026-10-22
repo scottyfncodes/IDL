@@ -44,7 +44,7 @@ test('solve a Wordcraft edition, keep the result, share without spoilers', async
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto(`/#/daily/wordcraft/${ARCHIVE_DATE}`);
     await page.getByRole('button', { name: 'Share result' }).click();
-    await expect(page.getByText('Result copied — no spoilers')).toBeVisible();
+    await expect(page.getByText('Result copied, no spoilers')).toBeVisible();
     const text = await page.evaluate(() => navigator.clipboard.readText());
     expect(text).toContain('idl Wordcraft · No. 15');
     expect(text).toContain('🟩🟩🟩🟩🟩');

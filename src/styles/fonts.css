@@ -14,9 +14,9 @@
   src: url('@fontsource-variable/fraunces/files/fraunces-latin-standard-italic.woff2') format('woff2-variations');
 }
 @font-face {
-  font-family: 'Inter Tight';
+  font-family: 'Schibsted Grotesk';
   font-style: normal;
   font-display: swap;
-  font-weight: 100 900;
-  src: url('@fontsource-variable/inter-tight/files/inter-tight-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 400 900;
+  src: url('@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2') format('woff2-variations');
 }

@@ -147,7 +147,7 @@ export default function Wordcraft({ puzzle, record, save }: DailyGameProps<Wordc
   );
 }
 
-const WIN_WORDS = ['Unreal!', 'Brilliant', 'Lovely work', 'Nicely done', 'Got there', 'Phew — just in time'];
+const WIN_WORDS = ['Unreal!', 'Brilliant', 'Lovely work', 'Nicely done', 'Got there', 'Phew, just in time'];
 
 export function WordcraftRules() {
   return (
