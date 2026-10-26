@@ -1,3 +1,4 @@
+import { EndArt } from '../../../art/EndArt';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePersistentState } from '../../../lib/storage';
 import { createRng, freshSeed } from '../../../lib/rng';
@@ -292,6 +293,7 @@ export default function Mancala() {
 
       {over && !busy && (
         <div className="end-card" role="region" aria-label="Result">
+          <EndArt />
           <p className="eyebrow">Final stores {sc[1]}–{sc[2]}</p>
           <h2 className="end-card__title display">{endTitle}</h2>
           {sweepLine && <p className="muted mnc-sweep">{sweepLine}</p>}

@@ -97,6 +97,15 @@ Web Worker where available, and cached on the device. The seed is
 
 See `docs/QUALITY.md` for the quality bar every game is held to.
 
+## Illustration
+
+idl's art direction is "paper hours": every game has a cut-paper cover scene
+built from its own mechanic, daily puzzles in morning light and game-room games
+in lamp-lit evening, with the wordmark's clay dot as the sun. The Today
+masthead follows the reader's local hour. All art is inline SVG in `src/art/`
+(no image files), so it scales cleanly and works offline. The rules every new
+scene must follow are at the top of `src/art/kit.tsx`.
+
 ## Offline & PWA
 
 - `sw.js` is generated at build time by a small Vite plugin

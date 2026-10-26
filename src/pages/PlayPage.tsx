@@ -1,6 +1,8 @@
 import { navigate, useRoute, href } from '../app/router';
 import { ROOM_GAMES, type RoomGameMeta, type Shelf } from '../room/registry';
-import { Glyph } from '../ui/glyphs';
+import { Cover } from '../art/covers';
+import { Art } from '../art/kit';
+import { RoomScene } from '../art/hero';
 import { IconOffline } from '../ui/icons';
 import { Footer, Masthead } from './TodayPage';
 
@@ -29,13 +31,15 @@ const playersLabel = (p: string) => (p === '1' ? 'Solo' : p === '2' ? '2 players
 function GameCard({ g }: { g: RoomGameMeta }) {
   return (
     <a className="game-card" href={href(`/play/${g.id}`)}>
-      <span className="game-card__glyph"><Glyph id={g.id} accent={g.accent} /></span>
-      <span className="game-card__name display">{g.name}</span>
-      <span className="game-card__blurb">{g.blurb}</span>
-      <span className="game-card__meta">
-        <span>{playersLabel(g.players)}</span>
-        <span aria-hidden="true">·</span>
-        <span>{g.minutes[0]}–{g.minutes[1]} min</span>
+      <Cover id={g.id} className="game-card__art" />
+      <span className="game-card__body">
+        <span className="game-card__name display">{g.name}</span>
+        <span className="game-card__blurb">{g.blurb}</span>
+        <span className="game-card__meta">
+          <span>{playersLabel(g.players)}</span>
+          <span aria-hidden="true">·</span>
+          <span>{g.minutes[0]}–{g.minutes[1]} min</span>
+        </span>
       </span>
     </a>
   );
@@ -50,13 +54,18 @@ export function PlayPage() {
   return (
     <div className="page">
       <Masthead />
-      <div className="page-head">
-        <p className="eyebrow">The game room</p>
-        <h1 className="page-title display">Play anywhere, together or alone.</h1>
-        <p className="page-lede">
-          <IconOffline size={16} /> Every game here works with no signal, once idl has loaded.
-        </p>
+      <div className="hero room-hero" data-light="night">
+        <Art className="art--night">
+          <RoomScene />
+        </Art>
+        <div className="hero__text room-hero__text">
+          <p className="eyebrow">The game room</p>
+          <h1 className="page-title display">Together or alone.</h1>
+        </div>
       </div>
+      <p className="page-lede">
+        <IconOffline size={16} /> Play anywhere: every game here works with no signal, once idl has loaded.
+      </p>
 
       <div className="chips room-filter" role="group" aria-label="Filter games">
         {PLAYER_FILTERS.map((f) => (

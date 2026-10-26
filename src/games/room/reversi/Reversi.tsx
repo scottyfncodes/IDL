@@ -1,3 +1,4 @@
+import { EndArt } from '../../../art/EndArt';
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { usePersistentState } from '../../../lib/storage';
 import { createRng, freshSeed } from '../../../lib/rng';
@@ -262,6 +263,7 @@ export default function Reversi() {
         {over && !viewingBoard && (
           <div className="rv-result">
             <div className="end-card" role="region" aria-label="Result">
+              <EndArt />
               <p className="eyebrow">Final discs {n[1]}–{n[2]}</p>
               <h2 className="end-card__title display">{endTitle}</h2>
               <p className="muted rv-result__line">

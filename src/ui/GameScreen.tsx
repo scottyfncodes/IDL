@@ -1,4 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { useContext, useState, type ReactNode } from 'react';
+import { GameArtContext } from '../art/context';
+import { Cover } from '../art/covers';
 import { goBack } from '../app/router';
 import { IconBack, IconHelp, IconMore } from './icons';
 import { Sheet } from './Sheet';
@@ -30,6 +32,7 @@ export interface GameScreenProps {
 export function GameScreen({ title, kicker, rules, backTo, menu, rulesInitiallyOpen = false, children, className = '' }: GameScreenProps) {
   const [rulesOpen, setRulesOpen] = useState(rulesInitiallyOpen);
   const [menuOpen, setMenuOpen] = useState(false);
+  const art = useContext(GameArtContext);
   return (
     <div className="game-screen">
       <header className="game-bar">
@@ -53,6 +56,7 @@ export function GameScreen({ title, kicker, rules, backTo, menu, rulesInitiallyO
       </header>
       <main className={`game-body ${className}`.trim()}>{children}</main>
       <Sheet open={rulesOpen} onClose={() => setRulesOpen(false)} title={`How to play ${title}`}>
+        {art && <Cover id={art} className="rules__art" />}
         <div className="rules">{rules}</div>
       </Sheet>
       {menu && (

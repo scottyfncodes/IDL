@@ -1,3 +1,4 @@
+import { EndArt, StartArt } from '../../../art/EndArt';
 import { useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { usePersistentState } from '../../../lib/storage';
 import { recordRoomResult } from '../../../room/stats';
@@ -273,6 +274,7 @@ export default function Battleship() {
     const firstEver = settingUp && to === game.starter && game.fleets[to].length === 0 && game.fleets[other(to)].length === 0;
     body = (
       <div className="bs-handoff anim-rise">
+        <StartArt />
         <div className={`bs-handoff__badge bs-handoff__badge--p${to + 1}`}><PlayerMark p={to} /></div>
         <h2 className="display bs-handoff__title">{firstEver ? `${NAMES[to]} hides their fleet first` : `Pass the phone to ${NAMES[to]}`}</h2>
         <p className="muted">
@@ -558,6 +560,7 @@ export default function Battleship() {
           ))}
         </div>
         <div className="end-card">
+          <EndArt />
           <p className="eyebrow">Fleet sunk</p>
           <h2 className="end-card__title display">{`${NAMES[w]} wins`}</h2>
           <p className="muted">{`All five boats found in ${st[w].shots} shots.`}</p>

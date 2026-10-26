@@ -1,3 +1,4 @@
+import { EndArt, StartArt } from '../../../art/EndArt';
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { usePersistentState } from '../../../lib/storage';
 import { recordRoomResult } from '../../../room/stats';
@@ -341,6 +342,7 @@ export default function Sudoku() {
         </div>
       ) : !game ? (
         <div className="sdk-setup panel anim-rise">
+          <StartArt />
           <p className="sdk-setup__title display">A fresh nine-by-nine</p>
           <p className="muted">Every grid is made on your phone and has exactly one solution.</p>
           <Segmented label="Difficulty" options={DIFF_OPTIONS} value={state.difficulty} onChange={(d) => setState((s) => ({ ...s, difficulty: d }))} />
@@ -429,6 +431,7 @@ export default function Sudoku() {
 
           {game.won ? (
             <div className="end-card">
+              <EndArt />
               {game.newBest && <p className="eyebrow">New best</p>}
               <p className="end-card__title display">Solved</p>
               <dl className="sdk-stats">

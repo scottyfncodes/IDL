@@ -1,3 +1,4 @@
+import { EndArt, StartArt } from '../../../art/EndArt';
 import { useState } from 'react';
 import { usePersistentState } from '../../../lib/storage';
 import { recordRoomResult } from '../../../room/stats';
@@ -202,6 +203,7 @@ export default function MysteryGrid() {
     return (
       <GameScreen title="Mystery Grid" kicker="Solo · logic" backTo="/play" rules={rules} menu={menu}>
         <div className="mg-setup panel anim-rise">
+          <StartArt />
           <p className="mg-setup__title display">A fresh case</p>
           <p className="muted">Each puzzle is generated on the spot and has exactly one answer, no guessing needed.</p>
           <Segmented label="Difficulty" options={DIFF_OPTIONS} value={state.difficulty} onChange={(d) => setState((s) => ({ ...s, difficulty: d }))} />
@@ -225,6 +227,7 @@ export default function MysteryGrid() {
 
       {game.won && (
         <div className="end-card">
+          <EndArt />
           {game.newBest && <p className="eyebrow">New best</p>}
           <p className="end-card__title display">Case closed</p>
           <table className="mg-table">

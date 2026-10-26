@@ -1,3 +1,4 @@
+import { EndArt } from '../../../art/EndArt';
 import {
   useCallback,
   useEffect,
@@ -413,6 +414,7 @@ export default function Mines() {
 
       {over ? (
         <div className="end-card" ref={endRef} role="region" aria-label="Result">
+          <EndArt lost={field.status === 'lost'} />
           <p className="eyebrow">{field.status === 'won' ? (game.newBest ? 'New best' : 'Field cleared') : 'Mine hit'}</p>
           <h2 className="end-card__title display">{field.status === 'won' ? formatTime(game.elapsed) : 'Better luck next field'}</h2>
           <p className="muted">

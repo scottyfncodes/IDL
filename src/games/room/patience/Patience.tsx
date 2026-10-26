@@ -1,3 +1,4 @@
+import { EndArt } from '../../../art/EndArt';
 import {
   useCallback,
   useEffect,
@@ -736,6 +737,7 @@ export default function Patience() {
 
             {game.won ? (
               <div className="end-card pt-end">
+                <EndArt />
                 <p className="eyebrow">{game.newBest ? 'New best' : `Draw ${draw}`}</p>
                 <p className="end-card__title display">Every card home</p>
                 <dl className="pt-endstats">

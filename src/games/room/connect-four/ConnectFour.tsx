@@ -1,3 +1,4 @@
+import { EndArt } from '../../../art/EndArt';
 import { useCallback, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { load, usePersistentState } from '../../../lib/storage';
 import { createRng, freshSeed } from '../../../lib/rng';
@@ -281,6 +282,7 @@ export default function ConnectFour() {
 
       {over && (
         <section className="end-card" aria-labelledby="c4-end-title">
+          <EndArt />
           <h2 id="c4-end-title" className="end-card__title display">
             {result.winner ? `${NAMES[result.winner]} ${vsIdl && result.winner === 1 ? 'win' : 'wins'}` : 'A draw'}
           </h2>

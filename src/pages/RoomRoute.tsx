@@ -2,6 +2,7 @@ import { Suspense, lazy, type ComponentType } from 'react';
 import { roomMeta, type RoomGameMeta } from '../room/registry';
 import { ErrorBoundary } from '../app/ErrorBoundary';
 import { LoadFailed, Loading, NotFound } from './States';
+import { GameArtContext } from '../art/context';
 
 const cache = new Map<string, ComponentType>();
 function lazyRoom(meta: RoomGameMeta) {
@@ -20,7 +21,9 @@ export function RoomRoute({ gameId }: { gameId: string }) {
   return (
     <ErrorBoundary key={gameId} fallback={(reset) => <LoadFailed onRetry={reset} />}>
       <Suspense fallback={<Loading />}>
-        <Game />
+        <GameArtContext.Provider value={meta.id}>
+          <Game />
+        </GameArtContext.Provider>
       </Suspense>
     </ErrorBoundary>
   );
