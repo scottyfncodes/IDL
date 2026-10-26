@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useMemo, useState, type ComponentType } from 'react';
-import { DAILY_GAMES, dailyMeta, type DailyGameMeta } from '../daily/registry';
+import { EDITION_GAMES, dailyMeta, type DailyGameMeta } from '../daily/registry';
 import { loadDaily, saveDaily } from '../daily/progress';
 import { buildShareText, shareUrl } from '../daily/shareText';
 import type { DailyGameProps, DailyModule, DailyRecord } from '../daily/types';
@@ -31,8 +31,8 @@ function CompletionPanel({ meta, date, record, module, puzzle }: { meta: DailyGa
   const toast = useToast();
   const won = record.status === 'won';
   const next = useMemo(() => {
-    const idx = DAILY_GAMES.findIndex((g) => g.id === meta.id);
-    const order = [...DAILY_GAMES.slice(idx + 1), ...DAILY_GAMES.slice(0, idx)];
+    const idx = EDITION_GAMES.findIndex((g) => g.id === meta.id);
+    const order = idx < 0 ? EDITION_GAMES : [...EDITION_GAMES.slice(idx + 1), ...EDITION_GAMES.slice(0, idx)];
     return order.find((g) => {
       const r = loadDaily(g.id, date);
       return !r || r.status === 'playing';

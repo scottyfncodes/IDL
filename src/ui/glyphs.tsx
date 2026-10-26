@@ -52,6 +52,20 @@ export const glyphs: Record<string, () => ReactElement> = {
       <path d="M15 13h18M15 24h18M15 35h18" stroke={A} />
     </S>
   ),
+  couplet: () => (
+    <S>
+      <rect x="6" y="15" width="22" height="11" rx="2.5" />
+      <path d="M17 15v11" strokeWidth="1.4" />
+      <circle cx="11.5" cy="20.5" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="20" cy="18" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="24.5" cy="23" r="1.2" fill="currentColor" stroke="none" />
+      <rect x="31" y="11" width="11" height="22" rx="2.5" stroke={A} />
+      <path d="M31 22h11" stroke={A} strokeWidth="1.4" />
+      <circle cx="36.5" cy="16.5" r="1.4" fill={A} stroke="none" />
+      <circle cx="36.5" cy="27.5" r="1.4" fill={A} stroke="none" />
+      <path d="M6 33h22" strokeDasharray="2.5 3" />
+    </S>
+  ),
   'dots-boxes': () => (
     <S>
       {[0, 1, 2].map((r) => [0, 1, 2].map((c) => <circle key={`${r}${c}`} cx={10 + c * 14} cy={10 + r * 14} r="2" fill="currentColor" stroke="none" />))}

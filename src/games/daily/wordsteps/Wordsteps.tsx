@@ -101,7 +101,7 @@ export default function Wordsteps({ puzzle, record, save }: DailyGameProps<Puzzl
     ? st === 'won'
       ? `Reached ${puzzle.end.toUpperCase()} in ${moves}. ${moves < puzzle.par ? 'Under par. Nicely found.' : moves === puzzle.par ? 'Right on par.' : `Par was ${puzzle.par}.`}`
       : `Out of moves. The ladder ran out before ${puzzle.end.toUpperCase()}.`
-    : message || (moves === 0 ? `Par ${puzzle.par}. Change one letter of ${puzzle.start.toUpperCase()}.` : `${left} ${left === 1 ? 'move' : 'moves'} left · par ${puzzle.par}`);
+    : message || (moves === 0 ? `Change one letter of ${puzzle.start.toUpperCase()}.` : `${left} ${left === 1 ? 'move' : 'moves'} left`);
 
   return (
     <div className="ws">

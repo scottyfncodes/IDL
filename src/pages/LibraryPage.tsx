@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { DAILY_GAMES, dailyMeta } from '../daily/registry';
+import { DAILY_GAMES, EDITION_GAMES, dailyMeta } from '../daily/registry';
 import type { DailyGameId } from '../daily/types';
 import { DailyStatsView } from '../daily/DailyStatsView';
 import { ROOM_GAMES } from '../room/registry';
@@ -26,7 +26,7 @@ interface DayInfo {
 function dayInfo(date: EditionDate): DayInfo {
   let finished = 0;
   let started = false;
-  for (const g of DAILY_GAMES) {
+  for (const g of EDITION_GAMES) {
     const s = dailyState(g.id, date);
     if (s === 'won' || s === 'lost') finished++;
     if (s !== 'unplayed') started = true;
@@ -78,14 +78,14 @@ function ArchiveCalendar({ today }: { today: EditionDate }) {
           if (c.finished < 0) {
             return <span key={c.date} className="calendar__day is-unavailable" aria-hidden="true">{day}</span>;
           }
-          const pct = c.finished / DAILY_GAMES.length;
+          const pct = c.finished / EDITION_GAMES.length;
           return (
             <a
               key={c.date}
               role="listitem"
               href={href(`/edition/${c.date}`)}
-              className={`calendar__day${c.date === today ? ' is-today' : ''}${c.finished === DAILY_GAMES.length ? ' is-complete' : ''}`}
-              aria-label={`${c.date}: ${c.finished} of ${DAILY_GAMES.length} finished`}
+              className={`calendar__day${c.date === today ? ' is-today' : ''}${c.finished === EDITION_GAMES.length ? ' is-complete' : ''}`}
+              aria-label={`${c.date}: ${c.finished} of ${EDITION_GAMES.length} finished`}
               style={{ '--pct': pct } as React.CSSProperties}
             >
               <span>{day}</span>
@@ -243,7 +243,7 @@ export function LibraryPage() {
           <div className="stat"><span className="stat__n display">{stats.won}</span><span className="stat__l">solved</span></div>
         </div>
         <ul className="per-game">
-          {DAILY_GAMES.map((g) => (
+          {DAILY_GAMES.filter((g) => !g.retired || (stats.perGame[g.id] ?? 0) > 0).map((g) => (
             <li key={g.id}>
               <button type="button" className="per-game__row" onClick={() => setRecordFor(g.id)}>
                 <span>{g.name}</span>

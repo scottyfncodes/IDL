@@ -3,11 +3,10 @@
 **A pocket of play for the time in between.** idl is a free, offline-first
 collection of original daily puzzles and pass-and-play games, by HaveAnApp.
 
-- **Today** — a daily edition of six original puzzles: Linkup, Wordcraft,
-  Sumwise, Deduction, Pattern and Wordsteps.
-- **Play** — the game room. Every game works with no connection: Dots & Boxes,
-  Connect Four, Mini Battleship, Pocket Sudoku, Mystery Grid, Tic-Tac-Toe and
-  Memory Match.
+- **Today** — a daily edition of six original puzzles: Linkup, Wordsteps,
+  Couplet, Deduction, Sumwise and Wordcraft.
+- **Play** — the game room, curated into *Start here*, *More to play* and
+  *Quick fillers*. Every game works with no connection.
 - **Library** — the playable archive of every past edition, your shelf of
   results, and preferences.
 
@@ -70,6 +69,33 @@ e2e/              Playwright tests
   pin specific dates to specific puzzles so accidental changes fail CI.
 - Every published puzzle is validated in tests (authored pools: every entry;
   generated: hundreds of consecutive days).
+- **Retiring a daily game:** mark it `retired: true` in `src/daily/registry.ts`.
+  It leaves new editions (`EDITION_GAMES`) but its archive still opens, so old
+  links and results keep working.
+
+## Couplet's puzzle engine
+
+Couplet (`src/games/daily/couplet`) generates three boards a day and proves
+each one has exactly one answer before anyone sees it.
+
+1. Grow a connected board out of placed dominoes (that tiling is the answer).
+2. Carve the bare board into regions and choose which will be "all equal",
+   then assign pip values to fit that design with every domino distinct
+   (rules are designed before numbers, which keeps big regions meaningful).
+3. **Tighten:** while a rival answer exists, split the region where it differs
+   (choosing, among candidate splits, the one that removes the most ambiguity).
+4. **Loosen:** turn exact rules into `<`, `>`, `≠`, merges or free cells one at
+   a time, keeping each change only if the solver still proves one answer.
+5. Accept the board only if its difficulty (solver branching: easy 0, medium
+   1–6, hard 12–80) and shape rules (few single-cell clues) fit the tier.
+
+`solve()` is the solver; `solutionProblems()`/`boardProblems()` check answers
+and boards independently of it; the tests add a brute-force enumerator that
+confirms uniqueness on small boards. Boards are built per tier on demand, in a
+Web Worker where available, and cached on the device. The seed is
+`couplet:v1:<date>:<tier>`; bump `GENERATOR_VERSION` to change the generator.
+
+See `docs/QUALITY.md` for the quality bar every game is held to.
 
 ## Offline & PWA
 

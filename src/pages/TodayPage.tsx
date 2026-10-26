@@ -7,7 +7,8 @@ import { IconOffline } from '../ui/icons';
 import { Wordmark } from '../ui/Wordmark';
 import { EditionHeading, EditionLineup } from './EditionView';
 
-const QUICK = ['tic-tac-toe', 'connect-four', 'memory-match'];
+// The strongest games for passing the phone, not the shortest.
+const QUICK = ['connect-four', 'dots-boxes', 'reversi'];
 
 export function Masthead() {
   const online = useOnline();

@@ -1,4 +1,4 @@
-import { DAILY_GAMES } from '../daily/registry';
+import { EDITION_GAMES } from '../daily/registry';
 import { dailyState, type DailyState } from '../daily/progress';
 import { editionNumber, formatLong, weekday, type EditionDate } from '../lib/date';
 import { useStorageVersion } from '../lib/storage';
@@ -15,7 +15,7 @@ const STATE_LABEL: Record<DailyState, string> = {
 
 export function useEditionStates(date: EditionDate) {
   useStorageVersion('daily:');
-  return DAILY_GAMES.map((g) => ({ game: g, state: dailyState(g.id, date) }));
+  return EDITION_GAMES.map((g) => ({ game: g, state: dailyState(g.id, date) }));
 }
 
 export function EditionProgress({ date }: { date: EditionDate }) {
