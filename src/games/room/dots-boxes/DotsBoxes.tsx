@@ -1,3 +1,4 @@
+import { EndArt } from '../../../art/EndArt';
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { load, usePersistentState } from '../../../lib/storage';
 import { createRng, freshSeed } from '../../../lib/rng';
@@ -331,6 +332,7 @@ export default function DotsBoxes() {
 
       {over && (
         <section className="end-card" aria-labelledby="db-end-title">
+          <EndArt />
           <h2 id="db-end-title" className="end-card__title display">
             {w === 'tie' ? 'Dead even' : humanWon ? 'You take it' : `${NAMES[w as Player]} takes it`}
           </h2>

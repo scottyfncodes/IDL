@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Cover } from '../art/covers';
 import { DAILY_GAMES, EDITION_GAMES, dailyMeta } from '../daily/registry';
 import type { DailyGameId } from '../daily/types';
 import { DailyStatsView } from '../daily/DailyStatsView';
@@ -246,6 +247,7 @@ export function LibraryPage() {
           {DAILY_GAMES.filter((g) => !g.retired || (stats.perGame[g.id] ?? 0) > 0).map((g) => (
             <li key={g.id}>
               <button type="button" className="per-game__row" onClick={() => setRecordFor(g.id)}>
+                <Cover id={g.id} className="per-game__art" />
                 <span>{g.name}</span>
                 <span className="meta">{stats.perGame[g.id] ?? 0} solved</span>
                 <IconChevron size={16} className="per-game__chev" />

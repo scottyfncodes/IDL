@@ -2,7 +2,7 @@ import { localEditionDate } from '../lib/date';
 import { useOnline } from '../lib/online';
 import { href } from '../app/router';
 import { ROOM_GAMES } from '../room/registry';
-import { Glyph } from '../ui/glyphs';
+import { Cover } from '../art/covers';
 import { IconOffline } from '../ui/icons';
 import { Wordmark } from '../ui/Wordmark';
 import { EditionHeading, EditionLineup } from './EditionView';
@@ -45,7 +45,7 @@ export function TodayPage() {
             return (
               <li key={id}>
                 <a className="mini-card" href={href(`/play/${id}`)}>
-                  <span className="mini-card__glyph"><Glyph id={id} accent={g.accent} /></span>
+                  <Cover id={id} className="mini-card__art" />
                   <span className="mini-card__name">{g.name}</span>
                   <span className="meta">{g.players === '2' ? '2 players' : g.players === '1' ? 'Solo' : 'Solo or 2'}</span>
                 </a>

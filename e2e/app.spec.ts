@@ -26,7 +26,7 @@ test('main navigation works and shows the three destinations', async ({ page }) 
   await noOverflow(page);
 
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Play' }).click();
-  await expect(page.getByRole('heading', { name: /Play anywhere/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Together or alone/ })).toBeVisible();
   await expect(page.locator('.game-card')).toHaveCount(ROOM.length);
   await noOverflow(page);
 

@@ -5,6 +5,7 @@ import './styles/tokens.css';
 import './styles/base.css';
 import './styles/ui.css';
 import './styles/app.css';
+import './styles/art.css';
 import { App } from './app/App';
 import { ToastProvider } from './ui/Toast';
 

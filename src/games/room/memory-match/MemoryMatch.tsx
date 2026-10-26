@@ -1,3 +1,4 @@
+import { EndArt } from '../../../art/EndArt';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { usePersistentState } from '../../../lib/storage';
 import { recordRoomResult } from '../../../room/stats';
@@ -283,6 +284,7 @@ export default function MemoryMatch() {
       {over && !viewingBoard && (
         <div className="mm-result">
         <div className="end-card" role="region" aria-label="Result">
+          <EndArt />
           {mode === 'solo' ? (
             <>
               <p className="eyebrow">{saved.newBest ? 'New best' : 'Board cleared'}</p>

@@ -14,6 +14,8 @@ import { useToast } from '../ui/Toast';
 import { IconShare } from '../ui/icons';
 import { LoadFailed, Loading, NotFound } from './States';
 import { DailyStatsView } from '../daily/DailyStatsView';
+import { GameArtContext } from '../art/context';
+import { Cover } from '../art/covers';
 
 // Cache lazy modules so each game's chunk is requested once.
 const moduleCache = new Map<string, Promise<{ default: DailyModule }>>();
@@ -49,6 +51,7 @@ function CompletionPanel({ meta, date, record, module, puzzle }: { meta: DailyGa
 
   return (
     <section className={`completion anim-rise is-${record.status}`} aria-labelledby="completion-title">
+      <Cover id={meta.id} className="completion__art" mood={won ? 'won' : 'lost'} />
       <p className="eyebrow">{won ? 'Solved' : 'Finished'}</p>
       <h2 id="completion-title" className="completion__score display">{record.result?.score ?? (won ? 'Solved' : 'Not this time')}</h2>
       {record.result?.grid && record.result.grid.length > 0 && (
@@ -95,6 +98,7 @@ function DailyPlay({ meta, date, module }: { meta: DailyGameMeta; date: EditionD
   const Game = module.Component as ComponentType<DailyGameProps<unknown, unknown>>;
   const isToday = date === localEditionDate();
   return (
+    <GameArtContext.Provider value={meta.id}>
     <GameScreen
       title={meta.name}
       kicker={`No. ${editionNumber(date)} · ${isToday ? 'Today' : formatShort(date)}`}
@@ -105,6 +109,7 @@ function DailyPlay({ meta, date, module }: { meta: DailyGameMeta; date: EditionD
       <Game key={`${meta.id}:${date}`} date={date} puzzle={puzzle} record={record} save={save} />
       {record && record.status !== 'playing' && <CompletionPanel meta={meta} date={date} record={record} module={module} puzzle={puzzle} />}
     </GameScreen>
+    </GameArtContext.Provider>
   );
 }
 
