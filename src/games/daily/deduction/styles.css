@@ -126,11 +126,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 9.5px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  padding: 1px 4px;
+  /* Sentence case: the uppercase label didn't fit six suspects ("WRO…"). */
+  padding: 1px 5px;
   border-radius: var(--r-pill);
   border: 1px solid var(--line-strong);
   color: var(--ink-3);

@@ -175,44 +175,16 @@
 .mini-card__name { font-weight: 650; font-size: var(--fs-sm); line-height: 1.25; }
 
 /* ---------- Play ---------- */
-.collections {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(210px, 72%);
-  gap: var(--s-3);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  margin: 0 calc((var(--gutter) + var(--safe-right)) * -1) 0 calc((var(--gutter) + var(--safe-left)) * -1);
-  padding: var(--s-1) calc(var(--gutter) + var(--safe-right)) var(--s-2) calc(var(--gutter) + var(--safe-left));
-  scroll-padding: 0 var(--gutter);
-  scrollbar-width: none;
-}
-.collections::-webkit-scrollbar { display: none; }
-@media (min-width: 900px) { .collections { grid-auto-flow: row; grid-template-columns: repeat(4, 1fr); overflow: visible; margin: 0; padding: 0; } }
-.collections > li { scroll-snap-align: start; }
-.collection {
-  display: grid;
-  align-content: start;
-  gap: var(--s-2);
-  width: 100%;
-  height: 100%;
-  min-height: 132px;
-  padding: var(--s-5);
-  text-align: left;
-  border-radius: var(--r-lg);
-  border: 1.5px solid var(--line);
-  background: var(--card);
-  transition: border-color var(--dur), background-color var(--dur), transform var(--dur) var(--ease);
-}
-.collection:active { transform: scale(0.985); }
-.collection[aria-pressed='true'] { border-color: var(--ink); background: var(--paper-2); }
-.collection__name { font-size: var(--fs-lg); font-weight: 600; line-height: 1.2; }
-.collection__line { color: var(--ink-2); font-size: var(--fs-sm); }
-.collection__count { margin-top: auto; font-size: var(--fs-xs); color: var(--ink-3); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.room-filter { margin-bottom: var(--s-2); }
+.play-shelf { display: grid; gap: var(--s-3); }
+.play-shelf + .play-shelf { margin-top: var(--s-5); }
+/* Fillers are honest about being small: no blurb, quieter cards. */
+.play-shelf--filler .game-card { box-shadow: none; background: transparent; }
+.play-shelf--filler .game-card__blurb { display: none; }
 
 .chips { display: flex; gap: var(--s-2); flex-wrap: wrap; }
 .chip {
-  min-height: 36px;
+  min-height: var(--tap);
   padding: 0 var(--s-4);
   border-radius: var(--r-pill);
   border: 1px solid var(--line-strong);

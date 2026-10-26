@@ -68,6 +68,17 @@ export const STAT_SPECS: Record<DailyGameId, StatSpec> = {
       return n === null ? null : String(n);
     },
   },
+  couplet: {
+    axis: 'Hints',
+    buckets: ['None', '1', '2', '3+'],
+    bucketOf: (score) => {
+      if (/^All three · no hints$/.test(score)) return 'None';
+      const m = /^All three · (\d+) hints?$/.exec(score);
+      if (!m) return null;
+      const n = Number(m[1]);
+      return n >= 3 ? '3+' : String(n);
+    },
+  },
   wordsteps: {
     axis: 'Steps vs par',
     buckets: ['Under', 'Par', '+1', '+2', '+3', '+4', 'Unsolved'],

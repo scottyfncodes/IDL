@@ -1,7 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const ROOM = ['dots-boxes', 'connect-four', 'battleship', 'sudoku', 'mystery-grid', 'tic-tac-toe', 'memory-match', 'reversi', 'mancala', 'mines', 'picture-logic', 'patience'];
-const DAILY = ['linkup', 'wordcraft', 'sumwise', 'deduction', 'pattern', 'wordsteps'];
+// Pattern is retired from editions but its archive still opens.
+const DAILY = ['linkup', 'wordsteps', 'couplet', 'deduction', 'sumwise', 'wordcraft', 'pattern'];
 
 async function noOverflow(page: Page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -29,8 +30,10 @@ test('main navigation works and shows the three destinations', async ({ page }) 
   await expect(page.locator('.game-card')).toHaveCount(ROOM.length);
   await noOverflow(page);
 
-  await page.getByRole('button', { name: /Two-Player Road Trip/ }).click();
-  await expect(page.getByRole('heading', { name: 'Two-Player Road Trip' })).toBeVisible();
+  // Curated shelves: the strongest games lead.
+  await expect(page.getByRole('heading', { name: 'Start here' })).toBeVisible();
+  await expect(page.locator('.play-shelf--featured .game-card').first()).toContainText('Connect Four');
+  await page.getByRole('button', { name: 'Two players' }).click();
   for (const card of await page.locator('.game-card').all()) await expect(card).toContainText(/2 players/);
 
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Library' }).click();
@@ -94,7 +97,7 @@ test('a finished daily puzzle is remembered on Today', async ({ page }) => {
   await page.evaluate(() => {
     const d = new Date();
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    localStorage.setItem(`idl:daily:pattern:${key}`, JSON.stringify({ v: 1, at: Date.now(), data: { status: 'won', state: null, result: { score: '3/3' }, updatedAt: Date.now() } }));
+    localStorage.setItem(`idl:daily:linkup:${key}`, JSON.stringify({ v: 1, at: Date.now(), data: { status: 'won', state: null, result: { score: 'Solved with no mistakes' }, updatedAt: Date.now() } }));
   });
   await page.reload();
   await expect(page.locator('.lineup__item[data-state="won"]')).toHaveCount(1);

@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { EditionDate } from '../lib/date';
 
-export type DailyGameId = 'linkup' | 'wordcraft' | 'sumwise' | 'deduction' | 'pattern' | 'wordsteps';
+export type DailyGameId = 'linkup' | 'wordcraft' | 'sumwise' | 'deduction' | 'pattern' | 'wordsteps' | 'couplet';
 
 export type DailyStatus = 'playing' | 'won' | 'lost';
 
