@@ -2,36 +2,41 @@
  * Deduction — a daily "who did it?" lineup. Pure rules and generation, no React.
  *
  * Suspects stand in a numbered row (left → right). Each wears a hat (or not),
- * a coloured coat and holds something (or nothing). Clues are true statements
- * about the culprit; together they leave exactly one suspect, and every clue
- * is needed.
+ * a coloured coat and holds something (or nothing).
+ *
+ * Two generations of puzzle exist, split by date (V2_FROM):
+ * - v1: clues are true statements about the culprit; together they leave
+ *   exactly one suspect, and every clue is needed. Frozen: past editions.
+ * - v2 (./v2.ts): the culprit had a lookout, and clues interlock through them.
+ * Play, scoring and the saved State are the same for both.
  */
 import { createRng, type Rng } from '../../../lib/rng';
 import { dayNumber, type EditionDate } from '../../../lib/date';
-import { NAMES, SCENARIOS, type Scenario } from './content';
+import { SCENARIOS, type Scenario } from './content';
+import {
+  attr,
+  CATEGORY_VALUES,
+  countWith,
+  HOLD,
+  neighbours,
+  NUM_WORDS,
+  randomLineup,
+  WEAR,
+  withPhrase,
+  type Category,
+  type Hat,
+  type Holding,
+  type Suspect,
+} from './base';
+import { clueTextV2, generateV2, isValidV2, solveV2, type ClueV2 } from './v2';
 
-export const HATS = ['none', 'cap', 'beret', 'bobble'] as const;
-export const COATS = ['red', 'green', 'blue', 'yellow'] as const;
-export const HOLDINGS = ['umbrella', 'book', 'basket', 'nothing'] as const;
+export { CATEGORY_VALUES, COATS, HATS, HOLDINGS, type Category, type Coat, type Hat, type Holding, type Suspect } from './base';
+export type { ClueV2, Role } from './v2';
 
-export type Hat = (typeof HATS)[number];
-export type Coat = (typeof COATS)[number];
-export type Holding = (typeof HOLDINGS)[number];
-export type Category = 'hat' | 'coat' | 'holding';
+/** Editions from this date use the v2 (lookout) generator. Never move it back. */
+export const V2_FROM: EditionDate = '2026-11-12';
 
-export const CATEGORY_VALUES: { hat: readonly Hat[]; coat: readonly Coat[]; holding: readonly Holding[] } = {
-  hat: HATS,
-  coat: COATS,
-  holding: HOLDINGS,
-};
-
-export interface Suspect {
-  name: string;
-  hat: Hat;
-  coat: Coat;
-  holding: Holding;
-}
-
+/** v1 clue: a statement about the culprit alone. */
 export type Clue =
   | { kind: 'is'; cat: Category; value: string }
   | { kind: 'not'; cat: Category; value: string }
@@ -47,14 +52,30 @@ export type Clue =
 export type ClueKind = Clue['kind'];
 export const POSITIONAL_KINDS: readonly ClueKind[] = ['nextTo', 'notNextTo', 'leftOf', 'rightOf', 'end', 'notEnd'];
 
-export interface Puzzle {
+export interface PuzzleV1 {
   date: EditionDate;
   scenario: Scenario;
   suspects: Suspect[];
   clues: Clue[];
   /** Index of the culprit in `suspects`. Never render before the game ends. */
   culprit: number;
+  version?: undefined;
 }
+
+export interface PuzzleV2 {
+  version: 2;
+  date: EditionDate;
+  scenario: Scenario;
+  suspects: Suspect[];
+  clues: ClueV2[];
+  /** Index of the culprit in `suspects`. Never render before the game ends. */
+  culprit: number;
+  /** Index of the lookout (never the culprit). Never render before the game ends. */
+  lookout: number;
+}
+
+export type Puzzle = PuzzleV1 | PuzzleV2;
+export const isV2 = (p: Pick<Puzzle, 'version'>): p is PuzzleV2 => p.version === 2;
 
 export interface State {
   /** Suspect indices the player has crossed out (pencil notes). */
@@ -67,11 +88,8 @@ export const MAX_ACCUSATIONS = 3;
 export const MIN_CLUES = 3;
 export const MAX_CLUES = 5;
 
-// ---------- Evaluation ----------
+// ---------- Evaluation (v1) ----------
 
-const attr = (s: Suspect, cat: Category): string => s[cat];
-const countWith = (lineup: readonly Suspect[], cat: Category, value: string) => lineup.filter((s) => attr(s, cat) === value).length;
-const neighbours = (lineup: readonly Suspect[], i: number) => [i - 1, i + 1].filter((j) => j >= 0 && j < lineup.length);
 const uniqueIndex = (lineup: readonly Suspect[], cat: Category, value: string) => {
   const idx = lineup.map((s, j) => (attr(s, cat) === value ? j : -1)).filter((j) => j >= 0);
   return idx.length === 1 ? idx[0] : -1;
@@ -121,24 +139,21 @@ export function isMinimal(clues: readonly Clue[], lineup: readonly Suspect[]): b
   return clues.every((_, k) => candidates(clues.filter((__, j) => j !== k), lineup).length > 1);
 }
 
-/** Index of the first clue that rules out suspect `i` (−1 if none — only the culprit). */
-export function refutingClue(p: Pick<Puzzle, 'clues' | 'suspects'>, i: number): number {
-  return p.clues.findIndex((c) => !holds(c, p.suspects, i));
+/**
+ * Index of the clue that rules out suspect `i` (−1 if none — only the culprit).
+ * v1: the first clue that is false of them. v2: the clue in the solving chain
+ * that clears them, given what the earlier steps established.
+ */
+export function refutingClue(p: Pick<PuzzleV1, 'clues' | 'suspects' | 'version'> | Pick<PuzzleV2, 'clues' | 'suspects' | 'version'>, i: number): number {
+  if (p.version === 2) {
+    const step = solveV2(p.clues, p.suspects).steps.find((s) => s.culprits.includes(i));
+    return step ? step.clue : -1;
+  }
+  const clues: readonly Clue[] = p.clues;
+  return clues.findIndex((c) => !holds(c, p.suspects, i));
 }
 
 // ---------- Wording ----------
-
-const NUM_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
-
-const WEAR: Record<Hat, string> = { none: 'no hat', cap: 'a cap', beret: 'a beret', bobble: 'a bobble hat' };
-const HOLD: Record<Holding, string> = { umbrella: 'an umbrella', book: 'a book', basket: 'a basket', nothing: 'nothing at all' };
-
-/** "someone wearing a cap" style phrase, after "someone"/"anyone". */
-function withPhrase(cat: Category, value: string): string {
-  if (cat === 'hat') return value === 'none' ? 'without a hat' : `wearing ${WEAR[value as Hat]}`;
-  if (cat === 'coat') return `in a ${value} coat`;
-  return value === 'nothing' ? 'with empty hands' : `holding ${HOLD[value as Holding]}`;
-}
 
 /** "the person in the beret" — used only when exactly one person matches. */
 function thePerson(cat: Category, value: string): string {
@@ -169,8 +184,12 @@ function notPhrase(cat: Category, value: string): string {
   return value === 'nothing' ? 'The culprit was holding something.' : `The culprit was not holding ${HOLD[value as Holding]}.`;
 }
 
-/** Plain-English sentence for a clue. Never mentions names or positions by number. */
-export function clueText(clue: Clue): string {
+const isClueV2 = (clue: Clue | ClueV2): clue is ClueV2 =>
+  'who' in clue || clue.kind === 'adjacent' || clue.kind === 'gap' || clue.kind === 'order' || clue.kind === 'same';
+
+/** Plain-English sentence for a clue (v1 or v2). Never mentions names or positions by number. */
+export function clueText(clue: Clue | ClueV2): string {
+  if (isClueV2(clue)) return clueTextV2(clue);
   switch (clue.kind) {
     case 'is':
       return isPhrase(clue.cat, clue.value);
@@ -236,20 +255,6 @@ export function trueClues(lineup: readonly Suspect[], c: number): Clue[] {
   return out.filter((cl) => holds(cl, lineup, c));
 }
 
-function randomLineup(rng: Rng, n: number): Suspect[] {
-  const names = rng.shuffle(NAMES).slice(0, n);
-  const seen = new Set<string>();
-  const out: Suspect[] = [];
-  while (out.length < n) {
-    const s: Suspect = { name: names[out.length], hat: rng.pick(HATS), coat: rng.pick(COATS), holding: rng.pick(HOLDINGS) };
-    const key = `${s.hat}|${s.coat}|${s.holding}`;
-    if (seen.has(key)) continue; // no two suspects look identical
-    seen.add(key);
-    out.push(s);
-  }
-  return out;
-}
-
 /** Try to build a minimal clue set for this lineup and culprit, or null. */
 export function buildClues(rng: Rng, lineup: readonly Suspect[], culprit: number, maxEliminated = lineup.length - 2): Clue[] | null {
   // Only clues that rule someone out, but never everyone at once (that would be the whole puzzle).
@@ -279,6 +284,7 @@ export function buildClues(rng: Rng, lineup: readonly Suspect[], culprit: number
 }
 
 export function isValidPuzzle(p: Puzzle): boolean {
+  if (isV2(p)) return isValidV2(p);
   const cands = candidates(p.clues, p.suspects);
   return (
     cands.length === 1 &&
@@ -304,7 +310,18 @@ export function scenarioFor(date: EditionDate): Scenario {
   return SCENARIOS[order[((day % SCENARIO_CYCLE) + SCENARIO_CYCLE) % SCENARIO_CYCLE]];
 }
 
-export function generatePuzzle(date: EditionDate, rng: Rng = createRng(`deduction:v1:${date}`)): Puzzle {
+/** The puzzle for a date: v1 before V2_FROM (unchanged, byte for byte), v2 from then on. */
+export function generatePuzzle(date: EditionDate, rng?: Rng): Puzzle {
+  return date < V2_FROM ? generatePuzzleV1(date, rng) : generatePuzzleV2(date, rng);
+}
+
+export function generatePuzzleV2(date: EditionDate, rng: Rng = createRng(`deduction:v2:${date}`)): PuzzleV2 {
+  const scenario = scenarioFor(date);
+  const core = generateV2(rng);
+  return { version: 2, date, scenario, ...core };
+}
+
+export function generatePuzzleV1(date: EditionDate, rng: Rng = createRng(`deduction:v1:${date}`)): PuzzleV1 {
   const scenario = scenarioFor(date);
   // Aim for a particular chain length; relax to any valid length if it proves elusive.
   const target = rng.pick([3, 4, 4, 5]);
@@ -318,7 +335,7 @@ export function generatePuzzle(date: EditionDate, rng: Rng = createRng(`deductio
     if (attempt < 1500 && clues.length !== target) continue;
     // Variety: no more than two clues of the same kind.
     if (clues.some((c) => clues.filter((d) => d.kind === c.kind).length > 2)) continue;
-    const p: Puzzle = { date, scenario, suspects, clues: rng.shuffle(clues), culprit };
+    const p: PuzzleV1 = { date, scenario, suspects, clues: rng.shuffle(clues), culprit };
     if (isValidPuzzle(p)) return p;
   }
   throw new Error(`deduction: no puzzle for ${date}`);
@@ -360,7 +377,35 @@ export function resultGrid(p: Puzzle, s: State): string {
   return s.accusations.map((i) => (i === p.culprit ? '✅' : '🔍')).join('');
 }
 
-/** Per-clue explanation for the reveal: which suspects each clue rules out. */
-export function explanation(p: Puzzle): { text: string; eliminated: string[] }[] {
-  return p.clues.map((c) => ({ text: clueText(c), eliminated: eliminatedBy(c, p.suspects).map((i) => p.suspects[i].name) }));
+export interface ExplanationStep {
+  /** Clue index this step uses (−1: "the lookout isn't the culprit"). */
+  clue: number;
+  text: string;
+  /** Names ruled out as the culprit at this step. */
+  eliminated: string[];
+  /** v2 only: names ruled out as the lookout at this step. */
+  lookoutsEliminated?: string[];
+  /** v2 only: set when this step leaves a single possible lookout. */
+  lookout?: string;
+}
+
+/**
+ * The reveal. v1: each clue with the suspects it rules out. v2: the solving
+ * chain, step by step, including what each step says about the lookout.
+ */
+export function explanation(p: Puzzle): ExplanationStep[] {
+  const name = (i: number) => p.suspects[i].name;
+  if (!isV2(p)) return p.clues.map((c, k) => ({ clue: k, text: clueText(c), eliminated: eliminatedBy(c, p.suspects).map(name) }));
+  let lookouts = p.suspects.map((_, i) => i);
+  return solveV2(p.clues, p.suspects).steps.map((s) => {
+    const before = lookouts.length;
+    lookouts = lookouts.filter((i) => !s.lookouts.includes(i));
+    return {
+      clue: s.clue,
+      text: s.clue >= 0 ? clueText(p.clues[s.clue]) : 'The lookout can’t also be the culprit.',
+      eliminated: s.culprits.map(name),
+      lookoutsEliminated: s.lookouts.map(name),
+      ...(lookouts.length === 1 && before > 1 ? { lookout: name(lookouts[0]) } : {}),
+    };
+  });
 }

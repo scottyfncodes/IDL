@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import Deduction, { DeductionReveal } from './Deduction';
 import mod from './index';
-import { refutingClue, type State } from './logic';
+import { isV2, refutingClue, type State } from './logic';
 import type { DailyRecord } from '../../../daily/types';
 
 const puzzle = mod.getPuzzle('2026-10-14');
@@ -69,5 +69,51 @@ describe('Deduction screen', () => {
     expect(container.querySelectorAll('.dd-reveal__list li')).toHaveLength(puzzle.clues.length);
     expect(within(container).getByText(culpritName)).toBeTruthy();
     expect(container.textContent).toContain('Rules out');
+  });
+});
+
+describe('Deduction screen (v2, with a lookout)', () => {
+  const p2 = mod.getPuzzle('2026-11-12');
+  const culprit2 = p2.suspects[p2.culprit].name;
+  const wrongs2 = p2.suspects.map((_, i) => i).filter((i) => i !== p2.culprit);
+
+  it('introduces the lookout without giving anything away', () => {
+    const { container } = render(<Deduction date={p2.date} puzzle={p2} record={undefined} save={() => {}} />);
+    expect(container.querySelector('.dd-case__lookout')?.textContent).toMatch(/lookout/);
+    expect(container.querySelectorAll('.dd-clue')).toHaveLength(p2.clues.length);
+    expect(container.querySelector('.is-culprit')).toBeNull();
+  });
+
+  it('plays exactly like v1: a wrong accusation names a clue, the right one wins', () => {
+    const save = vi.fn();
+    render(<Deduction date={p2.date} puzzle={p2} record={undefined} save={save} />);
+    const w = wrongs2[0];
+    const name = p2.suspects[w].name;
+    accuseByName(name);
+    expect(screen.getByText(new RegExp(`Not ${name}: clue ${refutingClue(p2, w) + 1} rules them out`))).toBeTruthy();
+    accuseByName(culprit2);
+    expect(save.mock.calls.at(-1)![0].result).toEqual({ score: 'Solved on 2nd accusation', grid: ['🔍✅'] });
+  });
+
+  it('reveal walks the chain and names the lookout', () => {
+    if (!isV2(p2)) throw new Error('expected a v2 puzzle');
+    const record: DailyRecord<State> = { status: 'won', state: { ruledOut: [], accusations: [p2.culprit] }, updatedAt: 0 };
+    const { container } = render(<DeductionReveal puzzle={p2} record={record} />);
+    const lead = container.querySelector('.dd-reveal__lead')!.textContent!;
+    expect(lead).toContain(culprit2);
+    expect(lead).toContain(`${p2.suspects[p2.lookout].name} kept lookout`);
+    expect(container.textContent).toMatch(/So the lookout must be/);
+    expect(container.querySelectorAll('.dd-reveal__list li').length).toBeGreaterThanOrEqual(p2.clues.length);
+  });
+});
+
+describe('saved progress', () => {
+  it('a v1 record still loads onto its v1 puzzle', () => {
+    const v1 = mod.getPuzzle('2026-11-11');
+    expect(v1.version).toBeUndefined();
+    const record: DailyRecord<State> = { status: 'playing', state: { ruledOut: [1, 4], accusations: [] }, updatedAt: 0 };
+    render(<Deduction date={v1.date} puzzle={v1} record={record} save={() => {}} />);
+    expect(screen.getAllByRole('button', { pressed: true })).toHaveLength(2);
+    expect(screen.queryByText(/lookout/)).toBeNull();
   });
 });
