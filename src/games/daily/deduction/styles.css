@@ -35,7 +35,7 @@
   display: flex;
   justify-content: space-between;
   padding: 0 var(--s-1) var(--s-1);
-  font-size: 10px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -63,6 +63,7 @@
   transition: background-color var(--dur), border-color var(--dur), opacity var(--dur);
 }
 .dd-suspect:hover:not(:disabled) { background: color-mix(in srgb, var(--card) 70%, transparent); }
+.dd-suspect:active:not(:disabled) { background: color-mix(in srgb, var(--ink) 6%, transparent); }
 .dd-suspect:disabled { cursor: default; }
 .dd-suspect__pos {
   display: grid;
@@ -72,7 +73,7 @@
   border-radius: var(--r-pill);
   background: var(--card);
   border: 1px solid var(--line-strong);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -89,8 +90,9 @@
 .dd-suspect__name {
   max-width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.2;
   font-weight: 650;
   font-size: var(--fs-sm);
 }
@@ -98,12 +100,12 @@
   display: grid;
   gap: 1px;
   justify-items: center;
-  font-size: 10.5px;
-  line-height: 1.25;
+  font-size: var(--fs-xs);
+  line-height: 1.2;
   color: var(--ink-2);
   max-width: 100%;
 }
-.dd-suspect__tags span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dd-suspect__tags span { max-width: 100%; text-align: center; overflow-wrap: anywhere; }
 
 .dd-suspect__cross {
   position: absolute;

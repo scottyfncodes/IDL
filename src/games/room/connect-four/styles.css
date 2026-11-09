@@ -28,6 +28,7 @@
   transition: background-color var(--dur);
   min-width: 0;
 }
+.c4-col:active:not(:disabled):not([aria-disabled='true']) { background: color-mix(in srgb, var(--ink) 6%, transparent); }
 .c4-col:disabled { cursor: default; }
 .c4-col[aria-disabled='true'] { cursor: not-allowed; }
 @media (hover: hover) {

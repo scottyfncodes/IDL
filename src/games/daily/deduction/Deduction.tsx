@@ -132,7 +132,7 @@ export default function Deduction({ puzzle, record, save }: DailyGameProps<Puzzl
       {!over && (
         <div className="dd-actions">
           <Button variant="primary" size="lg" onClick={() => setSheetOpen(true)}>Make an accusation</Button>
-          <span className="dd-tries" aria-label={`${left} of ${MAX_ACCUSATIONS} accusations left`}>
+          <span className="dd-tries" role="img" aria-label={`${left} of ${MAX_ACCUSATIONS} accusations left`}>
             {Array.from({ length: MAX_ACCUSATIONS }, (_, i) => (
               <span key={i} className={`dd-tries__dot${i < wrong ? ' is-used' : ''}`} aria-hidden="true" />
             ))}

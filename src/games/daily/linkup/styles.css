@@ -26,7 +26,7 @@
   box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--ink) 8%, transparent);
   color: var(--ink);
   font-weight: 700;
-  font-size: clamp(0.72rem, 3.6vw, 0.95rem);
+  font-size: clamp(0.75rem, 3.6vw, 0.95rem);
   letter-spacing: 0.02em;
   line-height: 1.15;
   text-transform: uppercase;
@@ -38,8 +38,11 @@
   user-select: none;
   transition: background-color var(--dur), color var(--dur), transform 80ms;
 }
-.lk-tile--sm { font-size: clamp(0.62rem, 3vw, 0.85rem); letter-spacing: 0; }
-.lk-tile--xs { font-size: clamp(0.56rem, 2.55vw, 0.78rem); letter-spacing: -0.01em; }
+/* Long words stay at a readable 12 px minimum; on very narrow phones they may
+ * wrap inside the tile rather than shrink below it. */
+.lk-tile--sm { font-size: clamp(0.75rem, 3vw, 0.85rem); letter-spacing: 0; }
+.lk-tile--xs { font-size: clamp(0.75rem, 2.9vw, 0.8rem); letter-spacing: -0.02em; overflow-wrap: anywhere; }
+@media (max-width: 359px) { .lk { --lk-gap: 6px; } .lk-tile--sm, .lk-tile--xs { letter-spacing: -0.03em; } }
 .lk-tile:active { transform: scale(0.97); }
 .lk-tile.is-selected {
   background: var(--ink);

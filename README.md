@@ -133,3 +133,6 @@ assets are immutable). Any static host works with equivalent headers.
 All puzzles, clues and copy are original. Word lists are derived from SCOWL
 (© Kevin Atkinson, permissive licence in `LICENSES/SCOWL.txt`). Fonts are
 Fraunces and Schibsted Grotesk (SIL Open Font License) via Fontsource.
+App icons (`public/icons/*.png`) are original to idl: they are rendered by
+`scripts/build-icons.mjs` from the idl wordmark set in Fraunces (the OFL permits
+embedding the font in images).

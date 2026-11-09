@@ -27,3 +27,4 @@
 .ttt-mark--o { stroke: var(--tide); }
 .ttt-top { display: grid; gap: var(--s-3); justify-items: center; }
 .ttt-board.is-waiting .ttt-cell:disabled { cursor: progress; }
+.ttt-row { display: contents; }

@@ -16,13 +16,20 @@
 }
 .btn:active:not(:disabled) { transform: scale(0.97); }
 .btn:disabled { opacity: 0.4; cursor: default; }
-.btn--sm { min-height: 36px; padding: 0 var(--s-4); font-size: var(--fs-sm); }
+.btn--sm { min-height: var(--tap); padding: 0 var(--s-4); font-size: var(--fs-sm); }
 .btn--lg { min-height: 52px; padding: 0 var(--s-6); font-size: var(--fs-lg); }
 .btn--block { display: flex; width: 100%; }
 .btn--primary { background: var(--ink); color: var(--paper); }
 .btn--secondary { background: transparent; color: var(--ink); border-color: var(--ink); }
 .btn--quiet { background: transparent; color: var(--ink-2); border-color: var(--line-strong); }
 .btn--danger { background: var(--error); color: #fff; }
+@media (hover: hover) {
+  .btn--primary:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 86%, var(--paper)); }
+  .btn--secondary:hover:not(:disabled),
+  .btn--quiet:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 5%, transparent); color: var(--ink); }
+  .btn--danger:hover:not(:disabled) { background: color-mix(in srgb, var(--error) 88%, #000); }
+  .kb__key:hover:not(:disabled) { background: var(--line); }
+}
 
 .icon-btn {
   display: inline-grid;
@@ -131,7 +138,7 @@
   border: 1px solid var(--line);
 }
 .segmented__opt {
-  min-height: 36px;
+  min-height: var(--tap);
   padding: 0 var(--s-4);
   border: 0;
   border-radius: var(--r-pill);
@@ -141,6 +148,8 @@
   font-size: var(--fs-sm);
   transition: background-color var(--dur), color var(--dur);
 }
+.segmented__opt:hover { color: var(--ink); }
+.segmented__opt:active { background: color-mix(in srgb, var(--ink) 8%, transparent); }
 .segmented__opt[aria-checked='true'] { background: var(--card); color: var(--ink); box-shadow: var(--shadow-1); }
 /* Visually 36px, but the tap area reaches 44px so options are easy to hit. */
 .segmented__opt { position: relative; }
