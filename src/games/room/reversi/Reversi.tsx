@@ -13,6 +13,7 @@ import {
   CELLS,
   SIZE,
   chooseMove,
+  HARD_BUDGET_MS,
   counts,
   flipsFor,
   isOver,
@@ -112,7 +113,7 @@ export default function Reversi() {
   const computerMove = useCallback(() => {
     if (!vsComputer || isOver(game) || game.turn !== 2) return;
     const rng = createRng(`${saved.seed}:${game.history.length}`);
-    const m = chooseMove(game.board, 2, opponent as 'easy' | 'hard', rng);
+    const m = chooseMove(game.board, 2, opponent as 'easy' | 'hard', rng, { budgetMs: HARD_BUDGET_MS });
     if (m === null) return;
     const next = play(game, m);
     if (next) commit(next);

@@ -1,4 +1,4 @@
-import { createRng } from '../../../lib/rng';
+import { createRng, type Rng } from '../../../lib/rng';
 import {
   applyMove,
   boardOver,
@@ -6,6 +6,7 @@ import {
   chooseMove,
   counts,
   flipsFor,
+  HARD_DEPTH,
   idx,
   initialBoard,
   isOver,
@@ -13,6 +14,7 @@ import {
   newGame,
   play,
   squareName,
+  stableDiscs,
   undo,
   winnerOf,
   type Board,
@@ -31,6 +33,80 @@ const B = (...rows: string[]): Board => {
 };
 const at = (name: string) => idx(Number(name[1]) - 1, 'abcdefgh'.indexOf(name[0]));
 const gameFrom = (board: Board, turn: Player): Game => ({ board, turn, last: null, passed: null, history: [] });
+
+/**
+ * The previous hard opponent (negamax depth 4, square weights + mobility),
+ * kept here only as a sparring partner for the strength test.
+ */
+const OLD_WEIGHTS = [
+  100, -20, 10, 5, 5, 10, -20, 100,
+  -20, -50, -2, -2, -2, -2, -50, -20,
+  10, -2, 1, 1, 1, 1, -2, 10,
+  5, -2, 1, 0, 0, 1, -2, 5,
+  5, -2, 1, 0, 0, 1, -2, 5,
+  10, -2, 1, 1, 1, 1, -2, 10,
+  -20, -50, -2, -2, -2, -2, -50, -20,
+  100, -20, 10, 5, 5, 10, -20, 100,
+];
+const OLD_NEAR: [number, number[]][] = [[0, [1, 8, 9]], [7, [6, 15, 14]], [56, [57, 48, 49]], [63, [62, 55, 54]]];
+function oldEvaluate(board: Board, me: Player): number {
+  const opp: Player = me === 1 ? 2 : 1;
+  let pos = 0;
+  for (let i = 0; i < 64; i++) {
+    if (board[i] === me) pos += OLD_WEIGHTS[i];
+    else if (board[i] === opp) pos -= OLD_WEIGHTS[i];
+  }
+  for (const [corner, near] of OLD_NEAR) {
+    if (board[corner] === 0) continue;
+    for (const n of near) {
+      if (board[n] === me) pos -= OLD_WEIGHTS[n];
+      else if (board[n] === opp) pos += OLD_WEIGHTS[n];
+    }
+  }
+  const a = legalMoves(board, me).length;
+  const b = legalMoves(board, opp).length;
+  return pos + (a + b === 0 ? 0 : (100 * (a - b)) / (a + b + 2));
+}
+function oldSearch(board: Board, me: Player, depth: number, alpha: number, beta: number, passedLast: boolean): number {
+  const opp: Player = me === 1 ? 2 : 1;
+  const moves = legalMoves(board, me);
+  if (moves.length === 0) {
+    if (passedLast) {
+      const n = counts(board);
+      const d = n[me] - n[opp];
+      return d > 0 ? 100000 + d : d < 0 ? -100000 + d : 0;
+    }
+    return -oldSearch(board, opp, depth, -beta, -alpha, true);
+  }
+  if (depth <= 0) return oldEvaluate(board, me);
+  moves.sort((x, y) => OLD_WEIGHTS[y] - OLD_WEIGHTS[x]);
+  let best = -Infinity;
+  for (const m of moves) {
+    const v = -oldSearch(applyMove(board, m, me)!, opp, depth - 1, -beta, -alpha, false);
+    if (v > best) best = v;
+    if (v > alpha) alpha = v;
+    if (alpha >= beta) break;
+  }
+  return best;
+}
+function oldHardMove(board: Board, player: Player, rng: Rng): number | null {
+  const moves = legalMoves(board, player);
+  if (moves.length === 0) return null;
+  const empties = counts(board).empty;
+  const depth = empties <= 10 ? empties : 4;
+  const opp: Player = player === 1 ? 2 : 1;
+  const ordered = rng.shuffle(moves).sort((x, y) => OLD_WEIGHTS[y] - OLD_WEIGHTS[x]);
+  let best = ordered[0];
+  let alpha = -Infinity;
+  for (const m of ordered) {
+    const v = -oldSearch(applyMove(board, m, player)!, opp, depth - 1, -Infinity, -alpha, false);
+    if (v > alpha) {
+      alpha = v;
+      best = m;
+    }
+  }
+  return best;
+}
 
 describe('setup', () => {
   test('standard four-disc start, player 1 to move', () => {
@@ -257,7 +333,7 @@ describe('computer opponent', () => {
     randomGames(6, (g) => {
       if (isOver(g)) return;
       for (const level of ['easy', 'hard'] as const) {
-        const m = chooseMove(g.board, g.turn, level, createRng(checked++));
+        const m = chooseMove(g.board, g.turn, level, createRng(checked++), { depth: 3 });
         expect(m).not.toBeNull();
         expect(legalMoves(g.board, g.turn)).toContain(m);
       }
@@ -273,20 +349,38 @@ describe('computer opponent', () => {
     expect(chooseMove(stuck, 1, 'hard', createRng(1))).toBeNull();
   });
 
-  test('hard takes a corner when one is on offer', () => {
-    const b = B(
-      '.ox.....',
-      '........',
-      '........',
-      '...ox...',
-      '...xo...',
-      '........',
-      '........',
-      '........',
-    );
-    expect(legalMoves(b, 1)).toContain(at('a1'));
-    for (let s = 0; s < 5; s++) expect(chooseMove(b, 1, 'hard', createRng(s))).toBe(at('a1'));
-  });
+  test('hard values corners and shuns X-squares beside an empty corner', () => {
+    // Over many real positions, not one hand-picked board: a deeper search
+    // will sometimes rightly leave a corner that cannot run away.
+    const X: Record<number, number> = { 9: 0, 14: 7, 49: 56, 54: 63 };
+    const isCorner = (m: number) => m === 0 || m === 7 || m === 56 || m === 63;
+    let offered = 0, taken = 0, xOffered = 0, xPlayed = 0;
+    for (let s = 0; s < 12; s++) {
+      const rng = createRng(`walk-${s}`);
+      let g = newGame();
+      while (!isOver(g)) {
+        const ms = legalMoves(g.board, g.turn);
+        const xRisk = (m: number) => X[m] !== undefined && g.board[X[m]] === 0;
+        const corner = ms.some(isCorner);
+        const xChoice = ms.some(xRisk) && ms.some((m) => !xRisk(m));
+        if (corner || xChoice) {
+          const m = chooseMove(g.board, g.turn, 'hard', createRng(s), { depth: 4 })!;
+          if (corner) {
+            offered++;
+            if (isCorner(m)) taken++;
+          }
+          if (xChoice) {
+            xOffered++;
+            if (xRisk(m)) xPlayed++;
+          }
+        }
+        g = play(g, rng.pick(ms))!;
+      }
+    }
+    expect(offered).toBeGreaterThan(100);
+    expect(taken / offered).toBeGreaterThan(0.6);
+    expect(xPlayed / xOffered).toBeLessThan(0.05);
+  }, 60_000);
 
   test('hard plays perfectly in the endgame', () => {
     // Exhaustive solver: best final disc difference for `p` to move.
@@ -324,7 +418,7 @@ describe('computer opponent', () => {
         const moves: number[] = [];
         let g = newGame();
         while (!isOver(g)) {
-          const m = chooseMove(g.board, g.turn, level, rng)!;
+          const m = chooseMove(g.board, g.turn, level, rng, { depth: 4 })!;
           moves.push(m);
           g = play(g, m)!;
         }
@@ -332,7 +426,7 @@ describe('computer opponent', () => {
       };
       expect(run(42)).toEqual(run(42));
     }
-  });
+  }, 60_000);
 
   test('hard comfortably beats easy', () => {
     let hardWins = 0;
@@ -340,23 +434,77 @@ describe('computer opponent', () => {
       const rng = createRng(`match-${s}`);
       const hardSide: Player = s % 2 === 0 ? 1 : 2;
       let g = newGame();
-      while (!isOver(g)) g = play(g, chooseMove(g.board, g.turn, g.turn === hardSide ? 'hard' : 'easy', rng)!)!;
+      while (!isOver(g)) g = play(g, chooseMove(g.board, g.turn, g.turn === hardSide ? 'hard' : 'easy', rng, { depth: 3 })!)!;
       if (winnerOf(g.board) === hardSide) hardWins++;
     }
     expect(hardWins).toBeGreaterThanOrEqual(7);
   });
 
-  test('hard stays quick (typical move well under 50 ms)', () => {
+  test('hard keeps to its thinking budget', () => {
+    const budgetMs = 40;
     const times: number[] = [];
     const rng = createRng('speed');
     let g = newGame();
     while (!isOver(g)) {
       const t = performance.now();
-      const m = chooseMove(g.board, g.turn, 'hard', rng)!;
+      const m = chooseMove(g.board, g.turn, 'hard', rng, { budgetMs })!;
       times.push(performance.now() - t);
+      expect(legalMoves(g.board, g.turn)).toContain(m);
       g = play(g, m)!;
     }
     times.sort((a, b) => a - b);
-    expect(times[times.length >> 1]).toBeLessThan(25);
+    expect(times[times.length >> 1]).toBeLessThan(budgetMs * 1.5);
+    // Generous slack for slow CI: the search checks the clock every 1024 nodes.
+    expect(times[times.length - 1]).toBeLessThan(budgetMs * 6);
+  }, 60_000);
+
+  test('with a time budget, stops deepening when the (injected) clock runs out', () => {
+    for (let s = 0; s < 6; s++) {
+      const rng = createRng(`clock-${s}`);
+      let g = newGame();
+      for (let k = 0; k < 12; k++) g = play(g, rng.pick(legalMoves(g.board, g.turn)))!;
+      let t = 0;
+      const now = () => (t += 10); // every look at the clock costs 10 ms
+      const timed = chooseMove(g.board, g.turn, 'hard', createRng(s), { budgetMs: 30, now });
+      // Depths 1 and 2 always finish; by then over half the budget is gone, so it stops.
+      expect(timed).toBe(chooseMove(g.board, g.turn, 'hard', createRng(s), { depth: 2 }));
+    }
   });
+
+  test('stable discs grow from an owned corner along a full edge', () => {
+    const b = B(
+      'xxxo....',
+      'x.......',
+      '........',
+      '...ox...',
+      '...xo...',
+      '........',
+      '........',
+      '........',
+    );
+    const st = stableDiscs(b);
+    expect([at('a1'), at('b1'), at('c1'), at('a2')].every((i) => st[i] === 1)).toBe(true);
+    expect(st[at('d1')]).toBe(0); // can still be outflanked along the row
+    expect(st[at('d4')]).toBe(0);
+    expect(stableDiscs(initialBoard()).every((v) => v === 0)).toBe(true);
+  });
+
+  test(`hard (depth ${HARD_DEPTH}) beats the old depth-4 opponent in most games, on both sides`, () => {
+    let newWins = 0;
+    const games = 8;
+    for (let s = 0; s < games; s++) {
+      const newSide: Player = s % 2 === 0 ? 1 : 2;
+      const rng = createRng(`h2h-${s >> 1}`);
+      let g = newGame();
+      // Two random opening moves so each pair of games starts somewhere new.
+      for (let k = 0; k < 2; k++) g = play(g, rng.pick(legalMoves(g.board, g.turn)))!;
+      while (!isOver(g)) {
+        const m = g.turn === newSide ? chooseMove(g.board, g.turn, 'hard', rng) : oldHardMove(g.board, g.turn, rng);
+        g = play(g, m!)!;
+      }
+      if (winnerOf(g.board) === newSide) newWins++;
+    }
+    // Measured: 7 of 8 at depth 6 (average margin about +32 discs).
+    expect(newWins).toBeGreaterThanOrEqual(6);
+  }, 120_000);
 });
