@@ -117,4 +117,17 @@ export function fingerprint(p: LinkupPuzzle): string {
  */
 export const REVIEWED_RED_HERRINGS: Record<string, string> = {
   'L064:PLUM': 'Plum is a stone fruit, but the stone-fruit group is complete without it and "Rhymes with SUM" has no other fourth (DRUM is needed for Percussion).',
+  'L083:ANT': 'Ant is an insect, but Small insects is complete (FLY, BEE, GNAT, MOTH) and ___hill has no other fourth (MOLE, DOWN, UP, ANT).',
+  // Deliberate red herrings in L085–L194: each is a fifth plausible member of
+  // one group that another group cannot complete without.
+  'L097:LEMON': 'Lemon is a shade of yellow, not pink, and it is needed as the anagram of MELON.',
+  'L105:COPPER': 'Copper is a metal, but Police slang has no other fourth (FUZZ, FEDS, FIVE-O), so Metals is IRON, TIN, ZINC, LEAD.',
+  'L107:PIKE': 'Pike is a fish, but Weapons has no other fourth (SWORD, DAGGER, SPEAR).',
+  'L107:CARP': 'Carp is a fish, but Complain has no other fourth (MOAN, GRIPE, GRUMBLE).',
+  'L113:RUBY': 'Ruby is a gem, but it is the only fortieth: Wedding anniversaries needs it beside PAPER, TIN and SILVER.',
+  'L116:TANGO': 'Tango is a dance, but the radio-alphabet group has no other fourth (KILO, ROMEO, SIERRA).',
+  'L116:SALSA': 'Salsa is a dance, but Dips has no other fourth (HUMMUS, GUACAMOLE, TZATZIKI).',
+  'L119:CRICKET': 'Cricket is an insect, but Sports has no other fourth (POLO, LACROSSE, FENCING) once SQUASH goes to Squeeze in.',
+  'L167:COBRA': 'Cobra is a snake, but Yoga poses has no other fourth (LOTUS, TREE, WARRIOR), so Snakes is PYTHON, VIPER, MAMBA, BOA.',
+  'L119:SQUASH': 'Squash is a sport, but Squeeze in has no other fourth (CRAM, WEDGE, STUFF).',
 };
