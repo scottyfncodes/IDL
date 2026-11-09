@@ -7,6 +7,7 @@ import {
   accuse,
   clueText,
   explanation,
+  isV2,
   MAX_ACCUSATIONS,
   refutingClue,
   resultGrid,
@@ -15,6 +16,7 @@ import {
   toggleRuledOut,
   valueLabel,
   wrongAccusations,
+  type ExplanationStep,
   type Puzzle,
   type State,
   type Suspect,
@@ -72,6 +74,11 @@ export default function Deduction({ puzzle, record, save }: DailyGameProps<Puzzl
         <p className="dd-case__kicker">Today’s case</p>
         <h2 className="dd-case__title display">{puzzle.scenario.title}</h2>
         <p className="dd-case__text">{puzzle.scenario.text}</p>
+        {isV2(puzzle) && (
+          <p className="dd-case__lookout">
+            Two of them were in on it: the <strong>culprit</strong> and a <strong>lookout</strong>. Clues can be about either, so work out the lookout to find the culprit.
+          </p>
+        )}
       </section>
 
       <div className="dd-lineup-wrap">
@@ -184,18 +191,27 @@ export default function Deduction({ puzzle, record, save }: DailyGameProps<Puzzl
 
 export function DeductionReveal({ puzzle }: { puzzle: Puzzle; record: DailyRecord<State> }) {
   const culprit = puzzle.suspects[puzzle.culprit];
+  const v2 = isV2(puzzle);
   return (
     <div className="dd-reveal">
       <p className="dd-reveal__lead">
         <strong>{culprit.name}</strong> did it: position {puzzle.culprit + 1}, {describe(culprit)}.
+        {v2 && (
+          <>
+            {' '}
+            <strong>{puzzle.suspects[puzzle.lookout].name}</strong> kept lookout from position {puzzle.lookout + 1}.
+          </>
+        )}
       </p>
+      {v2 && <p className="dd-reveal__how">How it unravels:</p>}
       <ol className="dd-reveal__list">
         {explanation(puzzle).map((e, k) => (
           <li key={k}>
-            <span className="dd-clue__n" aria-hidden="true">{k + 1}</span>
+            <span className={`dd-clue__n${e.clue < 0 ? ' is-rule' : ''}`} aria-hidden="true">{e.clue >= 0 ? e.clue + 1 : '•'}</span>
             <span>
+              {e.clue >= 0 && <span className="dd-sr">Clue {e.clue + 1}: </span>}
               <span className="dd-reveal__clue">{e.text}</span>
-              <span className="dd-reveal__elim">Rules out {listNames(e.eliminated)}.</span>
+              <span className="dd-reveal__elim">{stepNote(e, v2)}</span>
             </span>
           </li>
         ))}
@@ -205,7 +221,16 @@ export function DeductionReveal({ puzzle }: { puzzle: Puzzle; record: DailyRecor
   );
 }
 
-function listNames(names: string[]): string {
+function stepNote(e: ExplanationStep, v2: boolean): string {
+  if (!v2) return `Rules out ${listNames(e.eliminated)}.`;
+  const parts: string[] = [];
+  if (e.lookout) parts.push(`So the lookout must be ${e.lookout}.`);
+  else if (e.lookoutsEliminated?.length) parts.push(`The lookout can’t be ${listNames(e.lookoutsEliminated, 'or')}.`);
+  if (e.eliminated.length) parts.push(`${e.lookout ? 'That rules' : 'Rules'} out ${listNames(e.eliminated)} as the culprit.`);
+  return parts.join(' ');
+}
+
+function listNames(names: string[], joiner = 'and'): string {
   if (names.length <= 1) return names.join('');
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+  return `${names.slice(0, -1).join(', ')} ${joiner} ${names[names.length - 1]}`;
 }
