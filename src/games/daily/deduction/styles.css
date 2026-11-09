@@ -115,7 +115,7 @@
   color: var(--ink-2);
   max-width: 100%;
 }
-.dd-suspect__tags span { max-width: 100%; text-align: center; overflow-wrap: anywhere; }
+.dd-suspect__tags span { max-width: 100%; text-align: center; overflow-wrap: anywhere; hyphens: auto; -webkit-hyphens: auto; }
 
 .dd-suspect__cross {
   position: absolute;
