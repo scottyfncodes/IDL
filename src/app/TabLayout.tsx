@@ -15,7 +15,7 @@ const TABS: { id: Tab; label: string; to: string; Icon: typeof IconToday }[] = [
 export function TabLayout({ active, children }: { active: Tab; children: ReactNode }) {
   return (
     <div className="tab-layout">
-      <div className="tab-layout__content">{children}</div>
+      <main className="tab-layout__content">{children}</main>
       <nav className="tabbar" aria-label="Main">
         <ul className="tabbar__list">
           {TABS.map(({ id, label, to, Icon }) => (

@@ -169,7 +169,7 @@ export default function Linkup({ date, puzzle, record, save }: DailyGameProps<Li
 
       {!finished && (
         <>
-          <div className="lk-mistakes" aria-label={`${left} ${left === 1 ? 'mistake' : 'mistakes'} left`}>
+          <div className="lk-mistakes" role="img" aria-label={`${left} ${left === 1 ? 'mistake' : 'mistakes'} left`}>
             <span className="meta" aria-hidden="true">Mistakes left</span>
             <span className="lk-mistakes__dots" aria-hidden="true">
               {Array.from({ length: MAX_MISTAKES }, (_, i) => (

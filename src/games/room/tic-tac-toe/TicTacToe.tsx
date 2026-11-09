@@ -156,22 +156,28 @@ export default function TicTacToe() {
       </p>
 
       <div className={`ttt-board${over ? ' is-over' : ''}${idlTurn ? ' is-waiting' : ''}`} role="grid" aria-label="Tic-Tac-Toe board" aria-busy={idlTurn || undefined}>
-        {board.map((cell, i) => {
-          const winning = result.line?.includes(i);
-          return (
-            <button
-              key={i}
-              type="button"
-              role="gridcell"
-              className={`ttt-cell${winning ? ' is-winning' : ''}`}
-              aria-label={`Row ${Math.floor(i / 3) + 1}, column ${(i % 3) + 1}: ${cell ? NAMES[cell] : 'empty'}`}
-              disabled={!!cell || over || idlTurn}
-              onClick={() => onCell(i)}
-            >
-              {cell && <MarkIcon mark={cell} />}
-            </button>
-          );
-        })}
+        {[0, 1, 2].map((row) => (
+          <div key={row} role="row" className="ttt-row">
+            {[0, 1, 2].map((col) => {
+              const i = row * 3 + col;
+              const cell = board[i];
+              const winning = result.line?.includes(i);
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  role="gridcell"
+                  className={`ttt-cell${winning ? ' is-winning' : ''}`}
+                  aria-label={`Row ${row + 1}, column ${col + 1}: ${cell ? NAMES[cell] : 'empty'}`}
+                  disabled={!!cell || over || idlTurn}
+                  onClick={() => onCell(i)}
+                >
+                  {cell && <MarkIcon mark={cell} />}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
       {over && (

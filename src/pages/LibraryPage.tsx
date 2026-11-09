@@ -69,7 +69,7 @@ function ArchiveCalendar({ today }: { today: EditionDate }) {
           <IconChevron size={20} />
         </button>
       </div>
-      <div className="calendar__grid" role="list">
+      <div className="calendar__grid">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
           <span key={i} className="calendar__dow" aria-hidden="true">{d}</span>
         ))}
@@ -83,7 +83,6 @@ function ArchiveCalendar({ today }: { today: EditionDate }) {
           return (
             <a
               key={c.date}
-              role="listitem"
               href={href(`/edition/${c.date}`)}
               className={`calendar__day${c.date === today ? ' is-today' : ''}${c.finished === EDITION_GAMES.length ? ' is-complete' : ''}`}
               aria-label={`${c.date}: ${c.finished} of ${EDITION_GAMES.length} finished`}

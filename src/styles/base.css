@@ -84,3 +84,7 @@ img, svg { display: block; }
     scroll-behavior: auto !important;
   }
 }
+
+/* Taps on controls and boards act at once: no double-tap zoom delay. Pinch-zoom
+ * on the page stays available for people who need it. */
+button, a, [role='button'], .game-body { touch-action: manipulation; }

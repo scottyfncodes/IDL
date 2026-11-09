@@ -7,7 +7,7 @@
   --card: #fbf8f1;         /* raised surfaces */
   --ink: #1c2420;          /* forest-black */
   --ink-2: #4a524c;        /* secondary text */
-  --ink-3: #7b8079;        /* tertiary / meta text */
+  --ink-3: #646961;        /* tertiary / meta text (≥4.5:1 on paper and paper-2) */
   --line: #ddd3c1;
   --line-strong: #c4b8a2;
 
