@@ -92,6 +92,25 @@ describe('generator', () => {
     });
   }
 
+  it('200 more seeds: every puzzle unique, minimal and quick to make', () => {
+    const times: number[] = [];
+    for (let k = 0; k < 200; k++) {
+      const difficulty = DIFFS[k % 2];
+      const seed = 900_001 + k * 7919;
+      const t = performance.now();
+      const p = generate(seed, difficulty);
+      times.push(performance.now() - t);
+      const sols = solutionsOf(p.clues);
+      expect(sols).toHaveLength(1);
+      expect(sameAssign(ALL_ASSIGNS[sols[0]], p.solution)).toBe(true);
+      // Minimal: dropping any one clue lets a second answer in.
+      p.clues.forEach((_, j) => expect(solutionsOf(p.clues.filter((__, i) => i !== j)).length).toBeGreaterThan(1));
+      expect(THEMES.map((th) => th.id)).toContain(p.themeId);
+    }
+    times.sort((a, b) => a - b);
+    expect(times[times.length >> 1]).toBeLessThan(25);
+  }, 60_000);
+
   it('is deterministic per seed and varies across seeds', () => {
     expect(generate(99, 'tricky')).toEqual(generate(99, 'tricky'));
     const many = new Set(SEEDS.slice(0, 20).map((s) => JSON.stringify(generate(s, 'gentle').solution) + generate(s, 'gentle').themeId));
