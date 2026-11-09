@@ -141,9 +141,9 @@ describe('v2 wording', () => {
       'The lookout stood at one end of the row.',
       'The culprit did not stand at either end of the row.',
       'The lookout stood directly next to someone holding a book.',
-      'Exactly two people to the culprit’s left wore caps.',
-      'Exactly one person to the lookout’s right wore a red coat.',
-      'Nobody to the lookout’s right had empty hands.',
+      'Exactly two people to the left of the culprit wore caps.',
+      'Exactly one person to the right of the lookout wore a red coat.',
+      'Nobody to the right of the lookout had empty hands.',
       'The culprit stood directly next to the lookout.',
       'Exactly one person stood between the culprit and the lookout.',
       'The lookout stood somewhere to the left of the culprit.',
@@ -267,7 +267,7 @@ describe('v2 daily generation', () => {
       clues: [
         'The lookout’s coat was not blue.',
         'The culprit stood somewhere to the left of the lookout.',
-        'Exactly one person to the culprit’s left wore a blue coat.',
+        'Exactly one person to the left of the culprit wore a blue coat.',
         'The lookout was wearing a hat of some kind.',
       ],
     });
@@ -276,7 +276,7 @@ describe('v2 daily generation', () => {
       lookout: 1,
       names: ['Tomas', 'Kemi', 'Dev', 'Farid', 'Mina', 'Uma'],
       clues: [
-        'Exactly one person to the culprit’s right wore a blue coat.',
+        'Exactly one person to the right of the culprit wore a blue coat.',
         'The lookout stood directly next to someone without a hat.',
         'The lookout stood somewhere to the left of the culprit.',
         'Exactly one person stood between the culprit and the lookout.',

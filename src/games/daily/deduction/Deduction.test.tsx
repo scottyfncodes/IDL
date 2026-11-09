@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import Deduction, { DeductionReveal } from './Deduction';
 import mod from './index';
-import { isV2, refutingClue, type State } from './logic';
+import { isV2, refutationText, refutingClues, type State } from './logic';
 import type { DailyRecord } from '../../../daily/types';
 
 const puzzle = mod.getPuzzle('2026-10-14');
@@ -43,7 +43,7 @@ describe('Deduction screen', () => {
     const w = wrongs[0];
     const name = puzzle.suspects[w].name;
     accuseByName(name);
-    expect(screen.getByText(new RegExp(`Not ${name}: clue ${refutingClue(puzzle, w) + 1} rules them out`))).toBeTruthy();
+    expect(screen.getByText(`Not ${name}: ${refutationText(refutingClues(puzzle, w))}`, { exact: false })).toBeTruthy();
     expect(save.mock.calls.at(-1)![0].status).toBe('playing');
 
     accuseByName(culpritName);
@@ -90,7 +90,7 @@ describe('Deduction screen (v2, with a lookout)', () => {
     const w = wrongs2[0];
     const name = p2.suspects[w].name;
     accuseByName(name);
-    expect(screen.getByText(new RegExp(`Not ${name}: clue ${refutingClue(p2, w) + 1} rules them out`))).toBeTruthy();
+    expect(screen.getByText(`Not ${name}: ${refutationText(refutingClues(p2, w))}`, { exact: false })).toBeTruthy();
     accuseByName(culprit2);
     expect(save.mock.calls.at(-1)![0].result).toEqual({ score: 'Solved on 2nd accusation', grid: ['🔍✅'] });
   });
