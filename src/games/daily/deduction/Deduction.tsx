@@ -9,7 +9,8 @@ import {
   explanation,
   isV2,
   MAX_ACCUSATIONS,
-  refutingClue,
+  refutationText,
+  refutingClues,
   resultGrid,
   scoreText,
   status as gameStatus,
@@ -64,8 +65,7 @@ export default function Deduction({ puzzle, record, save }: DailyGameProps<Puzzl
   if (st === 'won') statusText = `Case closed. It was ${culpritName}.`;
   else if (st === 'lost') statusText = `Out of accusations. It was ${culpritName}.`;
   else if (last !== undefined) {
-    const k = refutingClue(puzzle, last);
-    statusText = `Not ${puzzle.suspects[last].name}: clue ${k + 1} rules them out. ${left} ${left === 1 ? 'accusation' : 'accusations'} left.`;
+    statusText = `Not ${puzzle.suspects[last].name}: ${refutationText(refutingClues(puzzle, last))}. ${left} ${left === 1 ? 'accusation' : 'accusations'} left.`;
   } else statusText = 'Read the clues, cross off suspects, then make your accusation.';
 
   return (

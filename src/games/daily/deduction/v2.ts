@@ -252,7 +252,9 @@ export function clueTextV2(clue: ClueV2): string {
     case 'nextTo':
       return `${S} stood directly next to someone ${withPhrase(clue.cat, clue.value)}.`;
     case 'side': {
-      const where = `to ${s}’s ${clue.side}`;
+      // "to the left of the culprit", never "to the culprit's left": the figures face
+      // the player, so a possessive left could be read as the suspect's own left.
+      const where = `to the ${clue.side} of ${s}`;
       if (clue.count === 0) return `Nobody ${where} ${sidePredicate(clue.cat, clue.value, false)}.`;
       if (clue.count === 1) return `Exactly one person ${where} ${sidePredicate(clue.cat, clue.value, false)}.`;
       return `Exactly ${NUM_WORDS[clue.count]} people ${where} ${sidePredicate(clue.cat, clue.value, true)}.`;
@@ -338,6 +340,10 @@ export function isValidV2(p: PuzzleV2Core): boolean {
   if (clues.some((k) => clues.filter((d) => d.kind === k.kind).length > 2)) return false;
   if (clues.filter((k) => k.kind === 'side').length > 1) return false;
   if (clues.filter((k) => ATTRIBUTE_KINDS.includes(k.kind)).length > 2) return false;
+  // Two attribute clues on the same person and category ("coat not green" + "coat green or yellow")
+  // collapse into one plain fact and read like padding.
+  const attrKeys = clues.filter((k) => ATTRIBUTE_KINDS.includes(k.kind)).map((k) => `${roleOf(k)}:${'cat' in k ? k.cat : ''}`);
+  if (new Set(attrKeys).size !== attrKeys.length) return false;
   const solved = solveV2(clues, L);
   if (solved.culprits.length !== 1 || solved.lookouts.length !== 1) return false;
   // Every innocent is cleared by a clue, not just by "the lookout isn't the culprit".

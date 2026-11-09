@@ -28,7 +28,7 @@ import {
   type Holding,
   type Suspect,
 } from './base';
-import { clueTextV2, generateV2, isValidV2, solveV2, type ClueV2 } from './v2';
+import { clueTextV2, culpritsV2, generateV2, isValidV2, solveV2, type ClueV2 } from './v2';
 
 export { CATEGORY_VALUES, COATS, HATS, HOLDINGS, type Category, type Coat, type Hat, type Holding, type Suspect } from './base';
 export type { ClueV2, Role } from './v2';
@@ -151,6 +151,37 @@ export function refutingClue(p: Pick<PuzzleV1, 'clues' | 'suspects' | 'version'>
   }
   const clues: readonly Clue[] = p.clues;
   return clues.findIndex((c) => !holds(c, p.suspects, i));
+}
+
+/**
+ * The clues a wrong accusation should point to: the smallest set of clues that,
+ * read together, rule suspect `i` out as the culprit (−1 never appears; [] only
+ * for the culprit). v1 clues each stand alone, so that is always one clue. In v2
+ * a clue in the solving chain often only works once the lookout is known, so the
+ * set names every clue needed, ties broken by the lowest clue numbers.
+ */
+export function refutingClues(p: Pick<PuzzleV1, 'clues' | 'suspects' | 'version'> | Pick<PuzzleV2, 'clues' | 'suspects' | 'version'>, i: number): number[] {
+  if (p.version !== 2) {
+    const k = refutingClue(p, i);
+    return k < 0 ? [] : [k];
+  }
+  const n = p.clues.length;
+  let best: number[] | null = null;
+  for (let mask = 1; mask < 1 << n; mask++) {
+    const set = p.clues.map((_, k) => k).filter((k) => mask & (1 << k));
+    if (best && set.length > best.length) continue;
+    if (culpritsV2(set.map((k) => p.clues[k]), p.suspects).includes(i)) continue;
+    if (!best || set.length < best.length || set.join() < best.join()) best = set;
+  }
+  return best ?? [];
+}
+
+/** "clue 3 rules them out" / "clues 1, 2 and 4 together rule them out". */
+export function refutationText(clues: readonly number[]): string {
+  const nums = clues.map((k) => String(k + 1));
+  if (nums.length === 1) return `clue ${nums[0]} rules them out`;
+  const list = nums.length === 2 ? nums.join(' and ') : `${nums.slice(0, -1).join(', ')} and ${nums[nums.length - 1]}`;
+  return `clues ${list} together rule them out`;
 }
 
 // ---------- Wording ----------
