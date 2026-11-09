@@ -9,6 +9,7 @@ import {
   eliminatedBy,
   explanation,
   generatePuzzle,
+  generatePuzzleV1,
   holds,
   isMinimal,
   isValidPuzzle,
@@ -144,9 +145,10 @@ describe('content', () => {
   });
 });
 
-describe('daily generation', () => {
+describe('daily generation (v1)', () => {
+  // The v1 generator is kept intact; exercise it well past its last edition.
   const dates = Array.from({ length: 400 }, (_, i) => addDays(LAUNCH_DATE, i));
-  const puzzles = dates.map((d) => mod.getPuzzle(d));
+  const puzzles = dates.map((d) => generatePuzzleV1(d));
 
   it('every puzzle for 400 days has a unique culprit with a minimal 3–5 clue set', () => {
     for (const p of puzzles) {
@@ -223,7 +225,7 @@ const PIN_1014 = {
 };
 
 describe('play', () => {
-  const p = mod.getPuzzle('2026-10-14');
+  const p = generatePuzzleV1('2026-10-14');
   const wrongs = p.suspects.map((_, i) => i).filter((i) => i !== p.culprit);
   const fresh: State = { ruledOut: [], accusations: [] };
 
@@ -239,7 +241,7 @@ describe('play', () => {
   });
 
   it('wrong accusation feedback names a clue that really excludes that suspect', () => {
-    for (const pz of [p, ...Array.from({ length: 60 }, (_, i) => mod.getPuzzle(addDays(LAUNCH_DATE, i)))]) {
+    for (const pz of [p, ...Array.from({ length: 60 }, (_, i) => generatePuzzleV1(addDays(LAUNCH_DATE, i)))]) {
       for (let i = 0; i < pz.suspects.length; i++) {
         if (i === pz.culprit) {
           expect(refutingClue(pz, i)).toBe(-1);

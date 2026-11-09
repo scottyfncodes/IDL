@@ -3,10 +3,19 @@ import { ALL_PUZZLES } from './puzzles';
 import { deriveClues, isLineSolvable, parseBitmap, solveGrid } from './logic';
 
 describe('picture logic: authored library', () => {
-  it('has at least 40 pictures with unique ids and titles', () => {
-    expect(ALL_PUZZLES.length).toBeGreaterThanOrEqual(40);
+  it('has at least 100 pictures with unique ids and titles', () => {
+    expect(PICTURES_5.length).toBeGreaterThanOrEqual(34);
+    expect(PICTURES_10.length).toBeGreaterThanOrEqual(53);
+    expect(ALL_PUZZLES.length).toBeGreaterThanOrEqual(100);
     expect(new Set(ALL_PUZZLES.map((p) => p.id)).size).toBe(ALL_PUZZLES.length);
     for (const set of [PICTURES_5, PICTURES_10]) expect(new Set(set.map((p) => p.title)).size).toBe(set.length);
+  });
+
+  it('keeps the original pictures first, in order (progress is stored by id)', () => {
+    expect(PICTURES_5.slice(0, 3).map((p) => p.id)).toEqual(['s-heart', 's-house', 's-mug']);
+    expect(PICTURES_5[18].id).toBe('s-hourglass');
+    expect(PICTURES_10.slice(0, 3).map((p) => p.id)).toEqual(['l-heart', 'l-house', 'l-sailboat']);
+    expect(PICTURES_10[22].id).toBe('l-bulb');
   });
 
   it('every bitmap is square and the right size', () => {
